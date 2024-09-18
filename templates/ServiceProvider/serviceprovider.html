@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bootstrap Layout - Full Height Sidebar</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container-fluid">
+      <div class="row min-vh-100 d-flex flex-column flex-md-row">
+       
+        <!-- Sidebar (Full height using flex properties) -->
+        <nav class="col-md-3 col-lg-2 d-flex flex-column bg-primary text-white p-3 vh-100 position-fixed">
+            <!-- LOGO inside the sidebar -->
+            <div class="text-start py-1 mb-3">
+              <h4 class="text-white">LOGO</h4>
+            </div>
+       
+            <!-- Sidebar Navigation -->
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link text-white" href="#"><i class="bi bi-house"></i><span class="px-3">Dashboard</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white" href="#"><i class="bi bi-search"></i><span class="px-3">Search</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white" href="#"><i class="bi bi-graph-up"></i><span class="px-3">Stats</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white" href="#"><i class="bi bi-box-arrow-right"></i><span class="px-3">Logout</span></a>
+              </li>
+            </ul>
+        </nav>
+ 
+        <!-- Main Content and Top Navbar -->
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-0">
+          <!-- Top Navbar -->
+          <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+            <div class="dropdown ms-auto me-4">
+              <a href="#" class="d-flex align-items-center text-decoration-none" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle fs-3"></i>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li><a class="dropdown-item" href="#">Logout</a></li>
+              </ul>
+            </div>
+          </nav>
+
+
+          <!-- Main Content -->
+          <main class="p-3">
+            <h1 class="mb-4">Hi, Username!!</h1>
+           
+            
+
+            <!-- Service History Table -->
+            <h4 class="mt-4">Open Services</h4>
+            <div class="card shadow-lg">
+              <div class="card-header">
+                  Today's Services
+              </div>
+              <div class="card-body">
+                  <table class="table">
+                      <thead>
+                          <tr>
+                              <th>Customer ID</th>
+                              <th>Customer Name</th>
+                             
+                              <th>Phone no</th>
+                              <th>Location(Pincode)</th>
+                              <th>Date</th>
+                              <th>Time</th>
+                              <th>Status</th>
+                              <th>Packages</th>
+                              
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <td>
+                                  <img src="https://via.placeholder.com/40" alt="Logo" class="image-holder">
+                                  Bathroom Cleaning Service
+                              </td>
+                              <td>{{c_name}}</td>
+                             
+                              <td>{{Phone_no}}</td>
+                              <td>{{c_pincode}}</td>
+                              <td>{{Date}}</td>
+                              <td>10:30 AM</td>
+                              <td>{{status}}</td>
+                              <td>{{packageName}}</td>
+                              
+                          </tr>
+                         
+                      </tbody>
+                  </table>
+              </div>
+          
+          
+            <div class="card-header">
+                Inline Services
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Customer Name</th>
+                           
+                            <th>Phone no</th>
+                            <th>Location(Pincode)</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Packages</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <img src="https://via.placeholder.com/40" alt="Logo" class="image-holder">
+                                Bathroom Cleaning Service
+                            </td>
+                            <td>{{c_name}}</td>
+                           
+                            <td>{{Phone_no}}</td>
+                            <td>{{c_pincode}}</td>
+                            <td>{{Date}}</td>
+                            <td>10:30 AM</td>
+                            <td>{{status}}</td>
+                            <td>{{packageName}}</td>
+                            
+                        </tr>
+                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
+          
+          <h4 class="mt-4">Requested Services</h4>
+            <div class="card shadow-lg">
+              <div class="card-header">
+                  Services
+              </div>
+              <div class="card-body">
+                  <table class="table">
+                      <thead>
+                          <tr>
+                              <th>Customer ID</th>
+                              <th>Customer Name</th>
+                             
+                              <th>Phone no</th>
+                              <th>Location(Pincode)</th>
+                              <th>Time</th>
+                              <th>Status</th>
+                              <th>Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <td>
+                                  <img src="https://via.placeholder.com/40" alt="Logo" class="image-holder">
+                                  Bathroom Cleaning Service
+                              </td>
+                              <td>{{c_name}}</td>
+                             
+                              <td>{{Phone_no}}</td>
+                              <td>{{c_pincode}}</td>
+                              <td>10:30 AM</td>
+                              <td><span class="badge bg-info text-dark">Requested</span></td>
+                              <td class="action-btns">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal3" >
+                                  <i class="bi bi-eye"></i>
+                              </button>
+                              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Service Remarks</Strong></h1>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body" >
+                                      <h5>{{packagename}}</h5>
+                                      <div class="form-floating mb-3">
+                                          <div class="container text-center">
+                                              <div class="row">
+                                                <div class="col border ">
+                                                  Booking Id: {{b_id}}
+                                                </div>
+                                                <div class="col border">
+                                                  Customer Name:{{c_name}}
+                                                </div>
+                                              </div>
+                                              <div class="row">
+                                                <div class="col border">
+                                                  Contact no:{{Phone_no}}
+                                                </div>
+                                                <div class="col border">
+                                                  Date:{{ b_Date}}
+                                                </div>
+                                                <div class="col border">
+                                                  Price:{{ price}}
+                                                </div>
+                                              </div> 
+                                              <div>
+                                                <div class="col border">
+                                                  Address:{{ Address}}
+                                                </div>
+                                              </div>
+                                                <div class="col border">
+                                                  Remarks:{{ Remarks}}
+                                                </div>
+                                          </div>
+                                      </div>
+                                    </div>                                      
+                                  </div>
+                                </div>
+                              </div>
+                              
+                                <button class="btn btn-sm btn-success" action="#" method="post">
+                                    Accept
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal4" >
+                                  Reject
+                                </button>
+                                <div class="modal fade" id="exampleModal4" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                  <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Order can not processed</Strong></h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body" >
+                                        <h5>because of</h5>
+                                        <div class="form-floating mb-3">
+                                            <div class="container text-center">
+                                              <form>
+                                              <label for="reject">Reasons: </label><br>
+                                              <select name="reject" id="reject" >
+                                                  <option value="select">Select a service</option>
+                                                  <option value="busy">Busy Schedule</option>
+                                                  <option value="Location">Location Inaccesible</option>
+                                                  <option value="ask req">inappropriate Demand</option>
+                                                  <option value="Other">Other</option>
+                                              </select><br>
+                                              <div class="mt-4" >
+                                              <button type="submit" class="btn btn-sm btn-success">Submit</button>
+                                              </div>
+                                              </form>                                                                           
+                                            </div>
+                                        </div>
+                                      </div>                                      
+                                    </div>
+                                  </div>
+                                
+                                </td>
+                          </tr>
+                         
+                      </tbody>
+                  </table>
+                  
+              </div>
+          </div>
+          <h4 class="mt-4">Closed Services</h4>
+            <div class="card shadow-lg">
+              <div class="card-header">
+                  Requests
+              </div>
+              <div class="card-body">
+                  <table class="table">
+                      <thead>
+                          <tr>
+                              <th>Customer ID</th>
+                              <th>Customer Name</th>
+                             
+                              <th>Phone no</th>
+                              <th>Location(Pincode)</th>
+                              
+                              <th>Rating</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <td>
+                                  <img src="https://via.placeholder.com/40" alt="Logo" class="image-holder">
+                                  Bathroom Cleaning Service
+                              </td>
+                              <td>{{c_name}}</td>
+                             
+                              <td>{{Phone_no}}</td>
+                              <td>{{c_pincode}}</td>
+                              <td>
+                                
+                                <i class="bi bi-star"></i>
+                              </td>
+                              
+                              <td class="action-btns">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal5" >
+                                  <i class="bi bi-eye"></i>
+                              </button>
+                              <div class="modal fade" id="exampleModal5" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Service Remarks</Strong></h1>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body" >
+                                      <h5>{{c_name}}</h5>
+                                      <div class="form-floating mb-3">
+                                          <div class="container text-center">
+                                              <div class="row">
+                                                <div class="col border ">
+                                                  Booking Id: {{b_id}}
+                                                </div>
+                                                <div class="col border">
+                                                  Customer Name:{{c_name}}
+                                                </div>
+                                              </div>
+                                              <div class="row">
+                                                <div class="col border">
+                                                  Contact no:{{Phone_no}}
+                                                </div>
+                                                <div class="col border">
+                                                  Date:{{b_Date}}
+                                                </div>
+                                                <div class="col border">
+                                                  Price:{{price}}
+                                                </div>
+                                              </div>
+                                              <div class="col border">
+                                                Address:{{ Address}}
+                                              </div>
+                                              <div class="col border"></div>
+                                                Remarks :{{ Remarks}}
+                                              </div>
+                                              <div class="col border"></div>
+                                                Rating:{{Rating}}
+                                              </div>
+                                            </div>  
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                          </tr>
+                         
+                      </tbody>
+                  </table>
+          
+     
+          </main>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+
