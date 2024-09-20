@@ -3,24 +3,20 @@
 <h2 class="mb-4">Find Services</h2>
 
 <!-- Campaign Search Form -->
-<form class="row g-3">
+<form class="row g-3" action="/customer/search" method="POST">
 <div class="col-md-4">
 <label for="service" class="form-label">Select Service</label>
-<select id="gender" class="form-select">
+<select name="service" class="form-select">
     <option selected>Any</option>
-    <option>Cleaning</option>
-    <option>Home Maintenance</option>
-    <option>Hair Salon</option>
+    {% for s in Services %}
+    <option>{{s.s_name}}</option>
+    {% endfor %}
   </select>
 </div>
 
 <div class="col-md-4">
-<label for="ageGroup" class="form-label">PinCode</label>
-<input type="text" class="form-control" id="ageGroup" placeholder="Enter Pin Code">
-</div>
-<div class="col-md-4">
-<label for="minBudget" class="form-label">Location</label>
-<input type="number" class="form-control" id="minBudget" placeholder="budget">
+<label for="city" class="form-label">City</label>
+<input type="text" class="form-control" name="city" placeholder="Enter city name">
 </div>
 
 
@@ -32,14 +28,25 @@
 <div class="card mb-3 shadow-lg mt-4">
 
 <div class="card-body">
+  <div class="row">
   {% for p in package %}
-    <div class="card" style="width: 18rem;">
+  <div class="col mb-4">
+    <div class="card shadow-lg" style="width: 18rem;">
         <!-- <img src="2024-05-22.jpg" class="card-img-top" alt="Cleaning"> -->
         <div class="card-body">
             <h5 class="card-text">{{p.p_name}}</h5>
             <p class="card-text"><b>Description:</b>{{p.p_description}}</p>
-            <button class = "btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#packagedetail">View</button>
-            <div class="modal fade" id="packagedetail" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <p>
+              <Strong>Rating:</Strong>
+              {% for i in range(4) %}
+              <i class="bi bi-star" style="color:rgb(211, 239, 26)"></i>
+              {% endfor %}
+              {% for i in range(5-4) %}
+              <i class="bi bi-star"></i>
+              {% endfor %}
+            </p>
+            <button class = "btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#packagedetail{{p.p_id}}">View</button>
+            <div class="modal fade" id="packagedetail{{p.p_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                   <div class="modal-header">
@@ -47,25 +54,31 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body" >
-                    <h5>{{p.p_name}}</h5>
-                    <div class="form-floating mb-3">
-                        <div class="container text-center">
+                    <h5 class = "mb-4">{{p.p_name}}</h5>
+                    <div class="row">
+                      <div class="col">
                             
-                              <div class="col border ">
-                                Description : {{p.p_description}}
-                              </div>
-                              <div class="col border">
-                                Service provider Name:{{p.servprovider.sp_name}}
-                              </div>                                            
-                              <div class="col border">
-                                Contact no:{{p.servprovider.sp_phone}}
-                              </div>                                              
-                              <div class="col border">
-                                Price:{{ p.p_price}}
-                              </div>
+                        <div >
+                          <strong>Description </strong>  : {{ p.p_description}}
+                        </div>
+                        <div>
+                          <strong>Service provider Name </strong>: {{ p.servprovider.sp_name}}
                         </div> 
-                                                                
+                      </div> 
+                    </div>        
+                    <div class="row"> 
+                      <div class="col">                                          
+                        <div>
+                        <strong>Contact no </strong>: {{ p.servprovider.sp_phone}}
+                        </div>                                              
+                        <div>
+                        <strong>Price </strong> : {{ p.p_price}}
+                        </div>
+                      </div>
                     </div>
+                    
+                                                                
+                    
                   </div>
                 </div>                                      
               </div>
@@ -84,15 +97,34 @@
                     <div class="form-floating mb-3">
                         <div class="container">
                           <form>
-                            <label for="date">date</label>
-                            <input type="date"required name="date"><br>
-                            <label for="Address">Address: </label>
-                            <input type="text" placeholder="Address" required name="s_add"><br>
-                            <label for="Pincode">Pincode: </label>
-                            <input type="text" placeholder ="Pincode" required name="s_pincode"><br>
-                            
-                            <label for="msg">Message: </label>
-                            <input type="text" name="msg"><br>
+                            <div class="row mb-3">
+                              <div class="col-md-4">
+                                <label class="form-label" for="date">date</label>
+                                <input type="date" class="form-control" required name="date">
+                              </div>
+                              
+                              <div class="col-md-4">
+                                <label class="form-label" for="Time">Time : </label>
+                                <input type="time" class="form-control" required name="Time">
+                              </div>
+                            </div>
+                            <div class="row mb-3" >
+                              <div class="col-md-8">
+                                <label class="form-label" for="Address">Address: </label>
+                                <input type="text" class="form-control" placeholder="Address" required name="s_add">
+                              </div>
+                              <div class="col-md-4">
+                                <label class="form-label" for="Pincode">Pincode: </label>
+                                <input type="text" class="form-control" placeholder ="Pincode" required name="s_pincode">
+                              </div>
+                            </div>
+                            <div class="row mb-3">
+                              <div class="col-md-8">
+                                <label class="form-label" for="msg">Message: </label>
+                                <textarea type="text" rows="2" class="form-control" name="msg"></textarea>
+                              </div>
+                            </div>
+                                                       
                             <button type="submit">Submit</button>
         
                           </form>
@@ -105,7 +137,9 @@
             </div>
         </div>
     </div>
+  </div>    
     {% endfor %}
+  </div>  
 </div>
 </div>
 {% endblock %}  

@@ -24,8 +24,9 @@ class ServiceProvider(db.Model):
     sp_password=db.Column(db.String)
     sp_exp=db.Column(db.Integer)
     sp_phone=db.Column(db.String)
-    sp_pincode=db.Column(db.String)
-    sp_service=db.Column(db.String)
+    sp_city=db.Column(db.String)
+    sp_rating=db.Column(db.Integer)
+    sp_servicename=db.Column(db.String,db.ForeignKey("services.s_name"))
     mypackages=db.relationship("Package", backref="servprovider")
     # sp_camp_child=db.relationship('Campaign')
     # camp_request_sp=db.relationship('Request')  
@@ -36,7 +37,7 @@ class Customer(db.Model):
     c_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
     c_name=db.Column(db.String,unique=True)
     c_address=db.Column(db.String)
-    c_pincode=db.Column(db.String) 
+    c_city=db.Column(db.String) 
     c_email=db.Column(db.String,unique=True)
     c_password=db.Column(db.String)
     c_phone=db.Column(db.String)   
@@ -47,6 +48,7 @@ class Services(db.Model):
     s_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
     s_name=db.Column(db.String,unique=True)
     packages=db.relationship("Package", backref="service")
+    Sproviders=db.relationship("ServiceProvider",backref="service")
 
       
 class Package(db.Model):
@@ -56,6 +58,7 @@ class Package(db.Model):
     p_name=db.Column(db.String,unique=True)
     p_price=db.Column(db.Integer)
     p_description=db.Column(db.String)
+    p_rating=db.Column(db.Integer)
     s_id=db.Column(db.Integer, db.ForeignKey("services.s_id"),nullable=False)
     sp_id=db.Column(db.Integer, db.ForeignKey("serviceprovider.sp_id"),nullable=False)
 
@@ -68,6 +71,7 @@ class Booking(db.Model) :
     c_id=db.Column(db.Integer, db.ForeignKey("customer.c_id"),nullable=False)
     p_id=db.Column(db.Integer, db.ForeignKey("package.p_id"),nullable=False)
     b_date=db.Column(db.Date)
+    b_time=db.Column(db.Time)
     b_address=db.Column(db.String)
     b_pincode=db.Column(db.String)
     b_message=db.Column(db.String)
@@ -101,7 +105,7 @@ def register():
 
     elif request.method=="GET" and request.args["utype"]=="serviceprovider":
         return render_template("/ServiceProvider/register_service.html") 
-    elif request.method=="POST" and request.args["utype"]=="service":
+    elif request.method=="POST" and request.args["utype"]=="serviceprovider":
         spname=request.form.get("s_name")
         spaddress=request.form.get("s_address")
         sppincode=request.form.get("s_pincode")
@@ -150,10 +154,24 @@ def search():
         s=request.args.get("sname")
         ser=db.session.query(Services).filter_by(s_name=s).first()
         pack=ser.packages
-        return render_template("/Customer/custsearch.html",package=pack)
+        Servis=db.session.query(Services).all()
+        return render_template("/Customer/custsearch.html",package=pack,Services=Servis)
     
     elif request.method=="GET":
-        return render_template("/Customer/custsearch.html")
+        Servis=db.session.query(Services).all()
+        return render_template("/Customer/custsearch.html",Services=Servis)
+    else:
+        ser=request.form.get("service")
+        citi=request.form.get("city")
+        Servisprovider=db.session.query(ServiceProvider).filter_by(sp_servicename=ser,sp_city=citi).all()
+        pack=[]
+        for sp in Servisprovider:
+            for p in sp.mypackages:
+                pack.append(p)
+              
+        
+        return render_template("/Customer/custsearch.html",package=pack)
+    
         
 
 
