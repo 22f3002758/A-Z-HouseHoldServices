@@ -1,20 +1,50 @@
 from flask import Flask,request, render_template, redirect,url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Table, Column, Integer, String, ForeignKey,Nullable
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user,UserMixin
 
 app=Flask(__name__)# create constructor
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///api_database.sqlite3'
+app.config['SECRET_KEY']="mysecretkey"
 db = SQLAlchemy(app) # connect app with sqlalchemy
+
+login_manager=LoginManager(app)
+
 app.app_context().push()# push it in the server
 
-class Admin(db.Model):
+class UserMixin:
+    def __init__(self,utype):
+        self.ut=utype
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self,ut):
+        if self.ut=="Customer":
+            return str(self.c_id)
+        elif self.ut=="ServiceProvider":
+            return str(self.sp_id)
+        else:
+            return str(self.admin_id)
+
+
+class Admin(db.Model,UserMixin):
     __tablename__='admin'
 
     admin_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
     admin_email=db.Column(db.String,unique=True)
     admin_password=db.Column(db.String,unique=True)
 
-class ServiceProvider(db.Model):
+    def get_id(self):
+        return f'a-{self.admin_id}'
+    
+class ServiceProvider(db.Model,UserMixin):
     __tablename__='serviceprovider'
 
     sp_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
@@ -28,10 +58,17 @@ class ServiceProvider(db.Model):
     sp_rating=db.Column(db.Integer)
     sp_servicename=db.Column(db.String,db.ForeignKey("services.s_name"))
     mypackages=db.relationship("Package", backref="servprovider")
+    receive_request=db.relationship("Request",backref="servprovider")
+    
+
     # sp_camp_child=db.relationship('Campaign')
     # camp_request_sp=db.relationship('Request')  
 
-class Customer(db.Model):
+    
+    def get_id(self):
+        return f'sp-{self.sp_id}'
+
+class Customer(db.Model,UserMixin):
     __tablename__="customer" 
 
     c_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
@@ -40,7 +77,11 @@ class Customer(db.Model):
     c_city=db.Column(db.String) 
     c_email=db.Column(db.String,unique=True)
     c_password=db.Column(db.String)
-    c_phone=db.Column(db.String)   
+    c_phone=db.Column(db.String) 
+    Sent_Request=db.relationship("Request",backref="cust")
+    
+    def get_id(self):
+       return f'c-{self.c_id}'  
 
 class Services(db.Model):
     __tablename__="services"
@@ -61,20 +102,24 @@ class Package(db.Model):
     p_rating=db.Column(db.Integer)
     s_id=db.Column(db.Integer, db.ForeignKey("services.s_id"),nullable=False)
     sp_id=db.Column(db.Integer, db.ForeignKey("serviceprovider.sp_id"),nullable=False)
+    req=db.relationship("Request",backref="pack")
 
-class Booking(db.Model) :
-    __tablename__="booking"
 
-    b_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
+class Request(db.Model):
+    __tablename__="request"
+
+    r_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
     # s_id=db.Column(db.Integer, ForeignKey(services.s_id),nullable=False)
     sp_id=db.Column(db.Integer, db.ForeignKey("serviceprovider.sp_id"),nullable=False)
     c_id=db.Column(db.Integer, db.ForeignKey("customer.c_id"),nullable=False)
     p_id=db.Column(db.Integer, db.ForeignKey("package.p_id"),nullable=False)
-    b_date=db.Column(db.Date)
-    b_time=db.Column(db.Time)
-    b_address=db.Column(db.String)
-    b_pincode=db.Column(db.String)
-    b_message=db.Column(db.String)
+    r_date=db.Column(db.Date)
+    r_time=db.Column(db.Time)
+    r_address=db.Column(db.String)
+    r_city=db.Column(db.String)
+    r_message=db.Column(db.String)
+    r_status=db.Column(db.String)
+
 
 @app.route("/", methods=["GET","POST"])
 def home():
@@ -121,7 +166,21 @@ def register():
             db.session.add(sp)
             db.session.commit()  
             return redirect("login.html")
-        
+
+@login_manager.user_loader
+def load_user(user_id):
+        utype,id=user_id.split("-")
+        if utype=="c":
+            return db.session.query(Customer).filter_by(c_id=id).first()
+        elif utype=='sp':
+            return db.session.query(ServiceProvider).filter_by(sp_id=id).first()
+        else:
+            return db.session.query(Admin).filter_by(admin_id=id).first()
+
+
+  
+
+
 @app.route("/login",methods=["GET","POST"])
 def login():
     if request.method=="GET":
@@ -131,17 +190,25 @@ def login():
         pwd=request.form.get("Password")
         c=db.session.query(Customer).filter_by(c_email=email).first()
         sp=db.session.query(ServiceProvider).filter_by(sp_email=email).first()
+        ad=db.session.query(Admin).filter_by(admin_email=email).first()
         if c and c.c_password==pwd:
+            login_user(c)
             return redirect("/customer/Dashboard")
         elif sp and sp.sp_password==pwd:
+            login_user(sp)
             return redirect("/serviceprovider/Dashboard")
+        elif ad and ad.admin_password==pwd:
+            login_user(ad)
+            return redirect("/admin/Dashboard")
         else:
             return render_template("notexist.html")
 
 @app.route("/customer/Dashboard",methods=["GET","POST"])
+@login_required
 def Dashboard():
     if request.method=="GET":
         s=db.session.query(Services).all()
+        
         serv=[]
         for ser in s:
             serv.append(ser.s_name)
@@ -157,23 +224,44 @@ def search():
         Servis=db.session.query(Services).all()
         return render_template("/Customer/custsearch.html",package=pack,Services=Servis)
     
-    elif request.method=="GET":
+    elif request.method=="GET" :
         Servis=db.session.query(Services).all()
         return render_template("/Customer/custsearch.html",Services=Servis)
-    else:
+    
+    elif request.method == "POST" and request.args.get("book")=='yes':
+        print("Hello")
+        spid=request.args.get("spid")
+        pid=request.args.get("pid")
+        cid=current_user.c_id
+        rdate = request.form.get("Date")
+        rtime = request.form.get("Time")
+        raddress = request.form.get("c_add")
+        rcity = request.form.get("c_city")
+        rmsg = request.form.get("c_msg")
+        rstatus = "Requested"
+        R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_msg=rmsg,r_status=rstatus )
+        db.session.add(R)
+        db.session.commit()
+        return redirect("/customer/Dashboard")
+
+    elif request.method=="POST":    
         ser=request.form.get("service")
         citi=request.form.get("city")
+        Servis=db.session.query(Services).all()
         Servisprovider=db.session.query(ServiceProvider).filter_by(sp_servicename=ser,sp_city=citi).all()
         pack=[]
         for sp in Servisprovider:
             for p in sp.mypackages:
-                pack.append(p)
-              
-        
-        return render_template("/Customer/custsearch.html",package=pack)
+                pack.append(p)        
+        return render_template("/Customer/custsearch.html",package=pack,Services=Servis)
     
-        
 
+    
+@app.route('/logout')
+@login_required
+def user_logout():
+    logout_user()
+    return redirect('/login')
 
 if __name__=="__main__":
     app.run(debug=True)

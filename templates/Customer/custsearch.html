@@ -35,9 +35,10 @@
         <!-- <img src="2024-05-22.jpg" class="card-img-top" alt="Cleaning"> -->
         <div class="card-body">
             <h5 class="card-text">{{p.p_name}}</h5>
-            <p class="card-text"><b>Description:</b>{{p.p_description}}</p>
+            <p class="card-text"><b>Description : </b>{{p.p_description}}</p>
+            <p class="card-text"><b>City : </b>{{p.servprovider.sp_city}}</p>
             <p>
-              <Strong>Rating:</Strong>
+              <Strong>Rating : </Strong>
               {% for i in range(4) %}
               <i class="bi bi-star" style="color:rgb(211, 239, 26)"></i>
               {% endfor %}
@@ -96,11 +97,11 @@
                     <h5>{{p.p_name}}</h5>
                     <div class="form-floating mb-3">
                         <div class="container">
-                          <form>
+                          <form action="/customer/search?book=yes&spid={{p.servprovider.sp_id}}&pid=p.p_id",method="POST">
                             <div class="row mb-3">
                               <div class="col-md-4">
                                 <label class="form-label" for="date">date</label>
-                                <input type="date" class="form-control" required name="date">
+                                <input type="date" class="form-control" required name="Date">
                               </div>
                               
                               <div class="col-md-4">
@@ -111,21 +112,21 @@
                             <div class="row mb-3" >
                               <div class="col-md-8">
                                 <label class="form-label" for="Address">Address: </label>
-                                <input type="text" class="form-control" placeholder="Address" required name="s_add">
+                                <input type="text" class="form-control" placeholder="Address" required name="c_add">
                               </div>
                               <div class="col-md-4">
-                                <label class="form-label" for="Pincode">Pincode: </label>
-                                <input type="text" class="form-control" placeholder ="Pincode" required name="s_pincode">
+                                <label class="form-label" for="City">City: </label>
+                                <input type="text" class="form-control" placeholder ="City" required name="c_city">
                               </div>
                             </div>
                             <div class="row mb-3">
                               <div class="col-md-8">
                                 <label class="form-label" for="msg">Message: </label>
-                                <textarea type="text" rows="2" class="form-control" name="msg"></textarea>
+                                <textarea type="text" rows="2" class="form-control" name="msg" placeholder="Leave your message if any."></textarea>
                               </div>
                             </div>
                                                        
-                            <button type="submit">Submit</button>
+                            <input type="submit" value="Book">
         
                           </form>
 
