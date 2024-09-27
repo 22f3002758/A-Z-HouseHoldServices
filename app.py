@@ -2,6 +2,7 @@ from flask import Flask,request, render_template, redirect,url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Table, Column, Integer, String, ForeignKey,Nullable
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user,UserMixin
+import datetime
 
 app=Flask(__name__)# create constructor
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///api_database.sqlite3'
@@ -113,8 +114,8 @@ class Request(db.Model):
     sp_id=db.Column(db.Integer, db.ForeignKey("serviceprovider.sp_id"),nullable=False)
     c_id=db.Column(db.Integer, db.ForeignKey("customer.c_id"),nullable=False)
     p_id=db.Column(db.Integer, db.ForeignKey("package.p_id"),nullable=False)
-    r_date=db.Column(db.Date)
-    r_time=db.Column(db.Time)
+    r_date=db.Column(db.String)
+    r_time=db.Column(db.String)
     r_address=db.Column(db.String)
     r_city=db.Column(db.String)
     r_message=db.Column(db.String)
@@ -212,7 +213,56 @@ def Dashboard():
         serv=[]
         for ser in s:
             serv.append(ser.s_name)
-        return render_template("/Customer/CustomerDashboard.html",servname=serv)
+
+        req=db.session.query(Request).filter_by(c_id=current_user.c_id).all()    
+        return render_template("/Customer/CustomerDashboard.html",servname=serv,requests=req)
+    
+@app.route("/customer/book", methods=["GET","POST"])
+def book():
+    if request.method=="POST" and "edit" in request.args:
+        rid=request.args.get("rid")
+        edate=request.form.get("Date")
+        etime=request.form.get("Time")
+        emsg=request.form.get("msg")
+        edit_req=db.session.query(Request).filter_by(r_id=rid).first()
+        edit_req.r_date=edate
+        edit_req.r_time=etime
+        edit_req.r_message=emsg
+        db.session.commit()
+        return redirect("/customer/Dashboard")
+    elif request.method=="POST" and "delete" in request.args:
+        rid=request.args.get("rid")
+        print("start")
+        delete_req=db.session.query(Request).filter_by(r_id=rid).first()
+        db.session.delete(delete_req)
+        db.session.commit()
+        print("Done")
+        return redirect("/customer/Dashboard")
+    elif request.method=="POST" and "close" in request.args:
+        rid=request.args.get("rid")
+        
+        close_req=db.session.query(Request).filter_by(r_id=rid).first()
+        close_req.r_status="Closed"
+        db.session.commit()
+        
+        return redirect("/customer/Dashboard")
+    elif request.method == "POST":
+        spid=request.args.get("spid")
+        pid=request.args.get("pid")
+        print(pid)
+        cid=current_user.c_id
+        rdate = request.form.get("Date")
+        rtime = request.form.get("Time")
+        print(rdate,rtime)
+        raddress = request.form.get("c_add")
+        rcity = request.form.get("c_city")
+        rmsg = request.form.get("c_msg")
+        rstatus = "Requested"
+        R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_message=rmsg,r_status=rstatus )
+        db.session.add(R)
+        db.session.commit()
+        return redirect("/customer/Dashboard")
+    
 
 @app.route("/customer/search",methods=["GET","POST"])
 def search():
@@ -228,22 +278,7 @@ def search():
         Servis=db.session.query(Services).all()
         return render_template("/Customer/custsearch.html",Services=Servis)
     
-    elif request.method == "POST" and request.args.get("book")=='yes':
-        print("Hello")
-        spid=request.args.get("spid")
-        pid=request.args.get("pid")
-        cid=current_user.c_id
-        rdate = request.form.get("Date")
-        rtime = request.form.get("Time")
-        raddress = request.form.get("c_add")
-        rcity = request.form.get("c_city")
-        rmsg = request.form.get("c_msg")
-        rstatus = "Requested"
-        R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_msg=rmsg,r_status=rstatus )
-        db.session.add(R)
-        db.session.commit()
-        return redirect("/customer/Dashboard")
-
+   
     elif request.method=="POST":    
         ser=request.form.get("service")
         citi=request.form.get("city")
@@ -254,7 +289,31 @@ def search():
             for p in sp.mypackages:
                 pack.append(p)        
         return render_template("/Customer/custsearch.html",package=pack,Services=Servis)
+
+@app.route("/serviceprovider/Dashboard", methods=["GET","POST"])
+@login_required
+def SPDashboard():
     
+    if request.method=="GET" and "accept" in request.args:
+        
+        id=request.args.get("rid")
+        r=db.session.query(Request).filter_by(r_id=id).first()
+        r.r_status="Accepted"
+        db.session.commit()
+        return redirect("/serviceprovider/Dashboard")
+    elif request.method=="POST" and "reject" in request.args:
+        id=request.args.get("rid")
+        r=db.session.query(Request).filter_by(r_id=id).first()
+        r.r_status="Rejected"
+        db.session.commit()
+        return redirect("/serviceprovider/Dashboard")
+    elif request.method=="GET":
+        d=datetime.date.today()
+        cd = d.strftime("%d-%m-%Y")
+        r=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_date=cd,r_status="Accepted").all()
+        Opser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Accepted").all()
+        reqser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Requested").all()
+        return render_template("/ServiceProvider/serviceprovider.html",todays_requests=r,open_services=Opser,requested_services=reqser)
 
     
 @app.route('/logout')

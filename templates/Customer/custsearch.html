@@ -35,6 +35,7 @@
         <!-- <img src="2024-05-22.jpg" class="card-img-top" alt="Cleaning"> -->
         <div class="card-body">
             <h5 class="card-text">{{p.p_name}}</h5>
+            <p>{{p.p_id}}</p>
             <p class="card-text"><b>Description : </b>{{p.p_description}}</p>
             <p class="card-text"><b>City : </b>{{p.servprovider.sp_city}}</p>
             <p>
@@ -85,8 +86,8 @@
               </div>
             </div>
           
-            <button class = "btn btn-sm btn-success " data-bs-toggle="modal" data-bs-target="#book">Book</button>
-            <div class="modal fade" id="book" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <button class = "btn btn-sm btn-success " data-bs-toggle="modal" data-bs-target="#book-{{p.p_id}}">Book</button>
+            <div class="modal fade" id="book-{{p.p_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                   <div class="modal-header">
@@ -97,7 +98,7 @@
                     <h5>{{p.p_name}}</h5>
                     <div class="form-floating mb-3">
                         <div class="container">
-                          <form action="/customer/search?book=yes&spid={{p.servprovider.sp_id}}&pid=p.p_id",method="POST">
+                          <form action="/customer/book?spid={{p.servprovider.sp_id}}&pid={{p.p_id}}" method="POST">
                             <div class="row mb-3">
                               <div class="col-md-4">
                                 <label class="form-label" for="date">date</label>
