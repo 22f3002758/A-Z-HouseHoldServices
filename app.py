@@ -120,6 +120,7 @@ class Request(db.Model):
     r_city=db.Column(db.String)
     r_message=db.Column(db.String)
     r_status=db.Column(db.String)
+    #r_rating=db.Column(db.Integer)
 
 
 @app.route("/", methods=["GET","POST"])
@@ -197,7 +198,7 @@ def login():
             return redirect("/customer/Dashboard")
         elif sp and sp.sp_password==pwd:
             login_user(sp)
-            return redirect("/serviceprovider/Dashboard")
+            return redirect("/serviceprovider/dashboard")
         elif ad and ad.admin_password==pwd:
             login_user(ad)
             return redirect("/admin/Dashboard")
@@ -256,7 +257,7 @@ def book():
         print(rdate,rtime)
         raddress = request.form.get("c_add")
         rcity = request.form.get("c_city")
-        rmsg = request.form.get("c_msg")
+        rmsg = request.form.get("msg")
         rstatus = "Requested"
         R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_message=rmsg,r_status=rstatus )
         db.session.add(R)
@@ -290,7 +291,7 @@ def search():
                 pack.append(p)        
         return render_template("/Customer/custsearch.html",package=pack,Services=Servis)
 
-@app.route("/serviceprovider/Dashboard", methods=["GET","POST"])
+@app.route("/serviceprovider/dashboard", methods=["GET","POST"])
 @login_required
 def SPDashboard():
     
@@ -300,22 +301,52 @@ def SPDashboard():
         r=db.session.query(Request).filter_by(r_id=id).first()
         r.r_status="Accepted"
         db.session.commit()
-        return redirect("/serviceprovider/Dashboard")
+        return redirect("/serviceprovider/dashboard")
     elif request.method=="POST" and "reject" in request.args:
         id=request.args.get("rid")
         r=db.session.query(Request).filter_by(r_id=id).first()
         r.r_status="Rejected"
         db.session.commit()
-        return redirect("/serviceprovider/Dashboard")
+        return redirect("/serviceprovider/dashboard")
     elif request.method=="GET":
         d=datetime.date.today()
         cd = d.strftime("%d-%m-%Y")
         r=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_date=cd,r_status="Accepted").all()
         Opser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Accepted").all()
         reqser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Requested").all()
-        return render_template("/ServiceProvider/serviceprovider.html",todays_requests=r,open_services=Opser,requested_services=reqser)
+        closeser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Closed").all()
+        return render_template("/ServiceProvider/serviceprovider.html",todays_requests=r,open_services=Opser,requested_services=reqser,closed_services=closeser)
 
-    
+@app.route("/serviceprovider/create",methods=["GET","POST"])
+def create_pack():
+    if request.method=="GET":
+        P=db.session.query(Package).filter_by(sp_id=current_user.sp_id).all()
+        return render_template("/ServiceProvider/create_package.html",mypackage=P)
+    elif request.method=="POST" and "edit" in request.args:
+        pid=request.args.get("pid")
+        pn=request.form.get("pname")
+        pd=request.form.get("pdesc")
+        pp=request.form.get("pprice")
+        edit_pack=db.session.query(Package).filter_by(p_id=pid).first()
+        if pn:
+            edit_pack.p_name=pn
+        if pd:
+            edit_pack.p_description=pd
+        if pp:
+            edit_pack.p_price=pp
+        db.session.commit()
+        return redirect("/serviceprovider/create")
+    elif request.method=="POST" and "create" in request.args:
+        
+        pn=request.form.get("pname")
+        pd=request.form.get("pdesc")
+        pp=request.form.get("pprice")
+        create_pack=Package(p_price=pp,p_name=pn,p_description=pd,sp_id=current_user.sp_id,s_id=current_user.service.s_id)
+        db.session.add(create_pack)
+        db.session.commit()
+        return redirect("/serviceprovider/create")
+
+
 @app.route('/logout')
 @login_required
 def user_logout():

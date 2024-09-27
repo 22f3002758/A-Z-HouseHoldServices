@@ -191,91 +191,39 @@ Services
 
 </div>
 </div>
-<!-- <h4 class="mt-4">Closed Services</h4>
+<h4 class="mt-4">Closed Services</h4>
 <div class="card shadow-lg">
-<div class="card-header">
-Requests
-</div>
-<div class="card-body">
-<table class="table">
-  <thead>
-      <tr>
-          <th>Customer ID</th>
-          <th>Customer Name</th>
-          
-          <th>Phone no</th>
-          <th>Location(Pincode)</th>
-          
-          <th>Rating</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>
-              <img src="https://via.placeholder.com/40" alt="Logo" class="image-holder">
-              Bathroom Cleaning Service
-          </td>
-          <td>c_name</td>
-          
-          <td>{{Phone_no}}</td>
-          <td>{{c_pincode}}</td>
-          <td>
-            
-            <i class="bi bi-star"></i>
-          </td>
-          
-          <td class="action-btns">
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal5" >
-              <i class="bi bi-eye"></i>
-          </button>
-          <div class="modal fade" id="exampleModal5" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Service Remarks</Strong></h1>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" >
-                  <h5>{{c_name}}</h5>
-                  <div class="form-floating mb-3">
-                      <div class="container text-center">
-                          <div class="row">
-                            <div class="col border ">
-                              Booking Id: {{b_id}}
-                            </div>
-                            <div class="col border">
-                              Customer Name:{{c_name}}
-                            </div>
-                          </div>
-                          <div class="row">
-                            <div class="col border">
-                              Contact no:{{Phone_no}}
-                            </div>
-                            <div class="col border">
-                              Date:{{b_Date}}
-                            </div>
-                            <div class="col border">
-                              Price:{{price}}
-                            </div>
-                          </div>
-                          <div class="col border">
-                            Address:{{ Address}}
-                          </div>
-                          <div class="col border"></div>
-                            Remarks :{{ Remarks}}
-                          </div>
-                          <div class="col border"></div>
-                            Rating:{{Rating}}
-                          </div>
-                        </div>  
-                </div>
-              </div>
-            </div>
-          </div>
-          
-      </tr>
-      
-  </tbody>
-</table> -->
+  <div class="card-header">
+    Requests
+  </div>
+  <div class="card-body">
+    <table class="table">
+      <thead>
+          <tr>
+            <th>Customer Name</th>
+            <th>Phone no</th>
+            <th>Package Name</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Received Rating</th>
+          </tr>
+      </thead>
+      <tbody>
+        {% for request in closed_services %}
+          <tr>
+            <td>{{request.cust.c_name}}</td>
+            <td>{{request.cust.c_phone}}</td>
+            <td>{{request.pack.p_name}}</td>
+            <td>{{request.r_date}}</td>
+            <td>{{request.r_status}}</td>
+              <td>
+              <i class="bi bi-star"></i>
+              </td>
+          </tr>
+        {% endfor %}  
+      </tbody>
+    </table>
+  </div>
+</div>  
 {% endblock %}  
 

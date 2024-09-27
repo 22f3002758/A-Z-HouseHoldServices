@@ -1,0 +1,110 @@
+{% extends "/ServiceProvider/serviceprovider_base.html" %}
+{% block content %}
+<p class="d-inline-flex gap-1">
+    
+    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+      Create 
+    </button>
+</p>
+<div class="collapse" id="collapseExample">
+<div class="card card-body">
+    <div class="form-floating mb-3">
+        <div class="container">
+          <form action="/serviceprovider/create?create=create" method="POST">
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label" for="pname">Package Name</label>
+                <input type="text" class="form-control" name="pname" required>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label" for="pdesc">Desription: </label>
+                <input type="text" class="form-control" name="pdesc" required>
+              </div>
+            </div>
+            <div class="row mb-3" >
+              <div class="col-md-8">
+                <label class="form-label" for="pprice">Price: </label>
+                <input type="text" class="form-control" name="pprice" required>
+              </div>
+            </div>                                                         
+            <input type="submit" value="Submit">
+
+          </form>
+
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="card mb-3 shadow-lg mt-4">
+
+    <div class="card-body">
+      <div class="row">
+      {% for p in mypackage %}
+      <div class="col mb-4">
+        <div class="card shadow-lg" style="width: 18rem;">
+            <!-- <img src="2024-05-22.jpg" class="card-img-top" alt="Cleaning"> -->
+            <div class="card-body">
+                <h5 class="card-text">{{p.p_name}}</h5>
+                <p class="card-text"><b>Description : </b>{{p.p_description}}</p>
+                <p class="card-text"><b>Price : </b>{{p.p_price}}</p>
+                <p>
+                  <Strong>Rating Recieved : </Strong>
+                  {% for i in range(4) %}
+                  <i class="bi bi-star" style="color:rgb(211, 239, 26)"></i>
+                  {% endfor %}
+                  {% for i in range(5-4) %}
+                  <i class="bi bi-star"></i>
+                  {% endfor %}
+                </p>
+                
+              
+                <button class = "btn btn-sm btn-success " data-bs-toggle="modal" data-bs-target="#edit-{{p.p_id}}">Edit</button>
+                <div class="modal fade" id="edit-{{p.p_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Edit your Package</Strong></h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body" >
+                        
+                        <div class="form-floating mb-3">
+                            <div class="container">
+                              <form action="/serviceprovider/create?pid={{p.p_id}}&edit=edit" method="POST">
+                                <div class="row mb-3">
+                                  <div class="col-md-4">
+                                    <label class="form-label" for="pname">Package Name</label>
+                                    <input type="text" class="form-control" name="pname" placeholder="{{p.p_name}}">
+                                  </div>
+                                  
+                                  <div class="col-md-4">
+                                    <label class="form-label" for="pdesc">Desription: </label>
+                                    <input type="text" class="form-control" name="pdesc">
+                                  </div>
+                                </div>
+                                <div class="row mb-3" >
+                                  <div class="col-md-8">
+                                    <label class="form-label" for="pprice">Price: </label>
+                                    <input type="text" class="form-control" placeholder="{{p.p_price}}"name="pprice">
+                                  </div>
+                                </div>                                                         
+                                <input type="submit" value="Edit">
+            
+                              </form>
+  
+                            </div>
+                        </div>
+                      </div>                                      
+                    </div>
+                  </div>
+                </div>
+            </div>
+        </div>
+      </div>    
+        {% endfor %}
+      </div>  
+    </div>
+  </div>
+{% endblock %}  
