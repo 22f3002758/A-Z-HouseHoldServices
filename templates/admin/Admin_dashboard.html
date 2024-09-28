@@ -67,44 +67,26 @@
                   <table class="table">
                       <thead>
                           <tr>
-                              <th>Service ID</th>
                               <th>Service Name</th>
-                             
-                              <th>Price</th>
-                              
+                              <th>Associte Providers</th>
+                              <th>No.Packages</th>
+                              <th>Base Price</th>
                               <th>Actions</th>
                           </tr>
                       </thead>
                       <tbody>
                           <tr>
                               
-                              <td>{{s_ID}}</td>
-                             
                               <td>{{s_name}}</td>
-                              <td>{{Price}}</td>
+                             
+                              <td>{{}}}</td>
+                              <td>{{}}</td>
+                              <td>{{}}</td>
                               <!-- <td>Edit/Deleted</td> -->
                               <!-- <td><span class="badge bg-info text-dark">Requested</span></td> -->
                               <td class="action-btns">
                                 
-                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteservice">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                                <div class="modal fade" id="deleteservice" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                  <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                      
-                                      <div class="modal-body" >
-                                        <h5>Are you sure you want to delete?</h5>
-                                        
-                                       
-                                      </div>
-                                      <div class="modal-footer">
-                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
-                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">NO</button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
+                                
                                 <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#editservice" >
                                     <i class="bi bi-pen"></i>
                                 </button>
@@ -195,95 +177,39 @@
                   <table class="table">
                       <thead>
                           <tr>
-                              <th>ID</th>
                               <th>Name</th>
-                             
                               <th>Experience</th>
                               <th>Service Name</th>
-                              <th>Action</th>
-                              
+                              <th>City</th>
+                              <th>No.Packages</th>
+                              <th>Phone</th>
+                              <th>Rating</th>
+                              <th>Status</th>
+                              <th>Action</th> 
                           </tr>
                       </thead>
                       <tbody>
                           <tr>
-                              <td>
-                                  <img src="https://via.placeholder.com/40" alt="Logo" class="image-holder">
-                                  Bathroom Cleaning Service
-                              </td>
-                              <td>{{c_name}}</td>
-                             
-                              <td>{{Phone_no}}</td>
-                              <td>{{c_pincode}}</td>
-                              <td>10:30 AM</td>
-                              <td><span class="badge bg-info text-dark">Requested</span></td>
+                              <td>{{sp_name}}</td>
+                              <td>{{sp_exp}}</td>
+                              <td>{{s_name}}</td>
+                              <td>{{sp_city}}</td>
+                              <td>{{}}</td>
+                              <td>{{sp_phone}}</td>
+                              <td>{{sp_rating}}</td>
+                              
+                              <td><span class="badge bg-info text-dark">{{sp_status}}</span></td>
                               <td class="action-btns">
-                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal3" >
-                                  <i class="bi bi-eye"></i>
-                              </button>
-                              <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                  <div class="modal-content">
-                                    <div class="modal-header">
-                                      <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Service Remarks</Strong></h1>
-                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body" >
-                                      <h5>{{s_name}}</h5>
-                                      <div class="form-floating mb-3">
-                                          <div class="container text-center">
-                                              <div class="row">
-                                                <div class="col border ">
-                                                  Booking Id: {{b_id}}
-                                                </div>
-                                                <div class="col border">
-                                                  Service Provider:{{s_name}}
-                                                </div>
-                                              </div>
-                                              <div class="row">
-                                                <div class="col border">
-                                                  Contact no:{{Phone_no}}
-                                                </div>
-                                                <div class="col border">
-                                                  Date:{{b_Date}}
-                                                </div>
-                                                <div class="col border">
-                                                  Price:{{price}}
-                                                </div>
-                                              </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-floating mb-3">
-                                          <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea2Disabled" style="height: 100px" ></textarea>
-                                          <label for="floatingTextarea2Disabled">Comments</label>
-                                        </div>
-                                        <div class="form-floating">
-                                          <select class="form-select" id="floatingSelectDisabled" aria-label="Floating label disabled select example" >
-                                            <option selected></option>
-                                            <option value="1">One</option>
-                                            <option value="2">Two</option>
-                                            <option value="3">Three</option>
-                                            <option value="3">Four</option>
-                                            <option value="3">Five</option>
-                                          </select>
-                                          <label for="floatingSelectDisabled">Rate the service</label>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                      <button type="button" class="btn btn-primary">Save changes</button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteprofessional">
-                                    <i class="bi bi-trash"></i>
+                                
+                                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#{{sp.sp_id}}">
+                                  <i class="bi bi-flag-fill"></i>
                                 </button>
-                                <div class="modal fade" id="deleteprofessional" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal fade" id="spblock-{{sp.sp_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                   <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                       
                                       <div class="modal-body" >
-                                        <h5>Are you sure you want to delete?</h5>
+                                        <h5>Are you sure you want to block?</h5>
                                         
                                        
                                       </div>
@@ -295,61 +221,35 @@
                                   </div>
                                 </div>
                                 <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#exampleModal2" >
-                                    <i class="bi bi-pen"></i>
+                                  <i class="bi bi-exclamation-triangle"></i>
                                 </button>
                                 <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                   <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                       <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Service Remarks</Strong></h1>
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Send Warning!!</Strong></h1>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                       </div>
                                       <div class="modal-body" >
-                                        <h5>{{s_name}}</h5>
                                         <div class="form-floating mb-3">
-                                            <div class="container text-center">
-                                                <div class="row">
-                                                  <div class="col border ">
-                                                    Booking Id: {{b_id}}
-                                                  </div>
-                                                  <div class="col border">
-                                                    Service Provider:{{s_name}}
-                                                  </div>
-                                                </div>
-                                                <div class="row">
-                                                  <div class="col border">
-                                                    Contact no:{{Phone_no}}
-                                                  </div>
-                                                  <div class="col border">
-                                                    Date:{{b_Date}}
-                                                  </div>
-                                                  <div class="col border">
-                                                    Price:{{price}}
-                                                  </div>
+                                          <div class="container">
+                                            <form action="/customer/book?spid={{p.servprovider.sp_id}}&pid={{p.p_id}}" method="POST">
+                                              
+                                              <div class="row mb-3">
+                                                <div class="col-md-8">
+                                                  <label class="form-label" for="msg">Message: </label>
+                                                  <textarea type="text" rows="2" class="form-control" name="msg" placeholder="Leave your message if any."></textarea>
                                                 </div>
                                               </div>
-                                          </div>
-                                          <div class="form-floating mb-3">
-                                            <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea2Disabled" style="height: 100px" ></textarea>
-                                            <label for="floatingTextarea2Disabled">Comments</label>
-                                          </div>
-                                          <div class="form-floating">
-                                            <select class="form-select" id="floatingSelectDisabled" aria-label="Floating label disabled select example" >
-                                              <option selected></option>
-                                              <option value="1">One</option>
-                                              <option value="2">Two</option>
-                                              <option value="3">Three</option>
-                                              <option value="3">Four</option>
-                                              <option value="3">Five</option>
-                                            </select>
-                                            <label for="floatingSelectDisabled">Rate the service</label>
+                                                                        
+                                              <input type="submit" value="Send">
+                          
+                                            </form>
+                
                                           </div>
                                       </div>
-                                      <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary">Save changes</button>
                                       </div>
-                                    </div>
+                                     </div>
                                   </div>
                                 </div>
                               </td>
@@ -359,33 +259,166 @@
                   </table>
               </div>
               </div>
-              <h4 class="mt-4">Service Requests</h4>
+              <h4 class="mt-4">Proffesionals Request</h4>
             <div class="card shadow-lg">
               <div class="card-header">
-                  Service Requests
+                  Proffesional Requests
               </div>
               <div class="card-body">
                   <table class="table">
                       <thead>
                           <tr>
-                              <th>Request ID</th>
-                              <th>Assigned Proffesional(Any)</th>
-                             
-                              <th>Request Date</th>
+                            <th>Name</th>
+                              <th>Experience</th>
+                              <th>Service Name</th>
+                              <th>City</th>
+                              <th>No.Packages</th>
+                              <th>Phone</th>
                               <th>Status</th>
-                                                            
+                              <th>Action</th>                                                            
+                          </tr>
+                      </thead>  
+                      <tbody>
+                          <tr>
+                            <td>{{sp_name}}</td>
+                              <td>{{sp_exp}}</td>
+                              <td>{{s_name}}</td>
+                              <td>{{sp_city}}</td>
+                              <td>{{}}</td>
+                              <td>{{sp_phone}}</td>
+                              
+                              <td><span class="badge bg-info text-dark">{{sp_status}}</span></td>
+                              <td class="action-btns">
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#spview-{{sp.sp_id}}" >
+                                  <i class="bi bi-eye"></i>
+                                </button>
+                                <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                  <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Profile Document</Strong></h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body" >
+                                                                                  
+                                      </div>
+                                    </div>                                      
+                                  </div>
+                                </div>
+                                                                 
+                                <button class="btn btn-sm btn-success" >
+                                    <a class="text-decoration-none text-white" href="/serviceprovider/Dashboard?rid={{request.r_id}}&accept=accept">Accept</a> 
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#spreject-{{sp.sp_id}}" >
+                                  Reject
+                                </button>
+                                <div class="modal fade" id="spreject-{{sp.sp_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                  <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Reject Request</Strong></h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body" >
+                                        <h5>because of</h5>
+                                        <div class="form-floating mb-3">
+                                            <div class="container text-center">
+                                              <form action="/serviceprovider/Dashboard?rid={{request.r_id}}&reject=reject" method="POST">
+                                              <label for="reject">Reasons: </label><br>
+                                              <select name="reject" id="reject" >
+                                                  <option value="select">Select a reason</option>
+                                                  <option value="busy">Less Experience</option>
+                                                  <option value="Other">Other</option>
+                                              </select><br>
+                                              <div class="mt-4" >
+                                              <button type="submit" class="btn btn-sm btn-success">Submit</button>
+                                              </div>
+                                              </form>                                                                           
+                                            </div>
+                                        </div>
+                                      </div>                                      
+                                    </div>
+                                  </div>
+                                </td> 
+                          </tr>
+                         
+                      </tbody>
+                  </table>
+              </div>
+          
+          </div>
+          <h4 class="mt-4">Customers</h4>
+            <div class="card shadow-lg">
+                <div class="card-body">
+                  <table class="table">
+                      <thead>
+                          <tr>
+                            <th>Customer Name</th>
+                            <th>City</th>
+                            <th>Phone no</th>
+                            <th>Action</th>                                                            
                           </tr>
                       </thead>  
                       <tbody>
                           <tr>
                               
-                              <td>{{s_ID}}</td>
-                             
-                              <td>{{sp_name}}</td>
-                              <td>{{s_Date}}</td>
+                              <td>{{c_name}}</td>
+                              <td>{{c_city}}</td>
+                              <td>{{c_phone}}</td>                             
                               
-                              <td><span class="badge bg-info text-dark">Requested</span></td>
-                              
+                              <td class="action-btns">
+                                
+                                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#{{sp.sp_id}}">
+                                  <i class="bi bi-flag-fill"></i>
+                                </button>
+                                <div class="modal fade" id="spblock-{{sp.sp_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                  <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                      
+                                      <div class="modal-body" >
+                                        <h5>Are you sure you want to block?</h5>
+                                        
+                                       
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">NO</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#exampleModal2" >
+                                  <i class="bi bi-exclamation-triangle"></i>
+                                </button>
+                                <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                  <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Send Warning!!</Strong></h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body" >
+                                        <div class="form-floating mb-3">
+                                          <div class="container">
+                                            <form action="/customer/book?spid={{p.servprovider.sp_id}}&pid={{p.p_id}}" method="POST">
+                                              
+                                              <div class="row mb-3">
+                                                <div class="col-md-8">
+                                                  <label class="form-label" for="msg">Message: </label>
+                                                  <textarea type="text" rows="2" class="form-control" name="msg" placeholder="Leave your message if any."></textarea>
+                                                </div>
+                                              </div>
+                                                                        
+                                              <input type="submit" value="Send">
+                          
+                                            </form>
+                
+                                          </div>
+                                      </div>
+                                      </div>
+                                     </div>
+                                  </div>
+                                </div>
                               </td>
                           </tr>
                          
