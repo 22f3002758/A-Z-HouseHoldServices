@@ -57,6 +57,9 @@ class ServiceProvider(db.Model,UserMixin):
     sp_phone=db.Column(db.String)
     sp_city=db.Column(db.String)
     sp_rating=db.Column(db.Integer)
+    sp_status=db.Column(db.String)
+    sp_warn=db.Column(db.Integer)
+    sp_warn_msg=db.Column(db.String)
     sp_servicename=db.Column(db.String,db.ForeignKey("services.s_name"))
     mypackages=db.relationship("Package", backref="servprovider")
     receive_request=db.relationship("Request",backref="servprovider")
@@ -79,6 +82,9 @@ class Customer(db.Model,UserMixin):
     c_email=db.Column(db.String,unique=True)
     c_password=db.Column(db.String)
     c_phone=db.Column(db.String) 
+    c_status=db.Column(db.String)
+    c_warn=db.Column(db.Integer)
+    c_warn_msg=db.Column(db.String)
     Sent_Request=db.relationship("Request",backref="cust")
     
     def get_id(self):
@@ -89,8 +95,10 @@ class Services(db.Model):
 
     s_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
     s_name=db.Column(db.String,unique=True)
+    baseprice=db.Column(db.Integer)
     packages=db.relationship("Package", backref="service")
     Sproviders=db.relationship("ServiceProvider",backref="service")
+    
 
       
 class Package(db.Model):
@@ -141,10 +149,11 @@ def register():
         cpwd=request.form.get("c_pwd")
         cphone=request.form.get("c_phone")
         c=db.session.query(Customer).filter_by(c_email=cemail).first()
+
         if c:
             return redirect("/exist")
         else:
-            cust=Customer(c_name=cname,c_address=caddress, c_pincode=cpincode,c_email=cemail,c_pwd=cpwd,c_phone=cphone)
+            cust=Customer(c_name=cname,c_address=caddress, c_pincode=cpincode,c_email=cemail,c_pwd=cpwd,c_phone=cphone,c_warn=0)
             db.session.add(cust)
             db.session.commit()   
             return redirect("login.html")
@@ -164,7 +173,8 @@ def register():
         if sp:
             return redirect("/exist")
         else:
-            sp=ServiceProvider(sp_name=spname,sp_address=spaddress, sp_pincode=sppincode,sp_email=spemail,sp_pwd=sppwd,sp_phone=spphone,sp_exp=spexp)
+            sp=ServiceProvider(sp_name=spname,sp_address=spaddress, sp_pincode=sppincode,sp_email=spemail,
+                               sp_pwd=sppwd,sp_phone=spphone,sp_exp=spexp,sp_warn=0)
             db.session.add(sp)
             db.session.commit()  
             return redirect("login.html")
@@ -201,7 +211,7 @@ def login():
             return redirect("/serviceprovider/dashboard")
         elif ad and ad.admin_password==pwd:
             login_user(ad)
-            return redirect("/admin/Dashboard")
+            return redirect("/admin/dashboard")
         else:
             return render_template("notexist.html")
 
@@ -345,6 +355,98 @@ def create_pack():
         db.session.add(create_pack)
         db.session.commit()
         return redirect("/serviceprovider/create")
+    
+@app.route("/admin/dashboard/",methods=["GET","POST"]) 
+@login_required
+def dashboard():
+    if request.method=="GET":
+        ser=db.session.query(Services).all()
+        act_sp=db.session.query(ServiceProvider).filter_by(sp_status="Active").all()
+        req_sp=db.session.query(ServiceProvider).filter_by(sp_status="Requested").all()
+        flag_sp=db.session.query(ServiceProvider).filter_by(sp_status="Flagged").all()
+        act_c=db.session.query(Customer).filter_by(c_status="Active").all()
+        flag_c=db.session.query(Customer).filter_by(c_status="Flagged").all()
+        print(ser)
+        return render_template("/admin/Admin_dashboard.html",Services=ser,active=act_sp,requested=req_sp,flagged=flag_sp,cu=current_user,
+                               c_active=act_c,c_flag=flag_c)
+
+@app.route("/flag",methods=["GET","POST"])
+def flag():
+    if request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="flag":
+        spid=request.args.get("spid")
+        sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+        sp.sp_status="Flagged"
+        db.session.commit()
+        return redirect("/admin/dashboard")
+    elif request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="unflag":
+        spid=request.args.get("spid")
+        sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+        sp.sp_status="Active"
+        db.session.commit()
+        return redirect("/admin/dashboard")
+
+    
+    elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="flag":
+        cid=request.args.get("cid")
+        c=db.session.query(Customer).filter_by(c_id=cid).first()
+        c.c_status="Flagged"
+        db.session.commit()
+        return redirect("/admin/dashboard")
+    elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="unflag" :
+        cid=request.args.get("cid")
+        c=db.session.query(Customer).filter_by(c_id=cid).first()
+        c.c_status="Active"
+        db.session.commit()
+        return redirect("/admin/dashboard")
+
+@app.route("/warning", methods=["GET","POST"])
+def warning():
+        if request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="Active":
+            spid=request.args.get("spid")
+            msg=request.form.get("msg")
+            sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+            sp.sp_warn+=1
+            sp.sp_warn_msg=msg
+            db.session.commit()
+            return redirect("/admin/dashboard") 
+        elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="Active":
+            cid=request.args.get("cid")
+            msg=request.form.get("msg")
+            c=db.session.query(Customer).filter_by(c_id=cid).first()
+            c.c_warn+=1
+            c.sp_warn_msg=msg
+            db.session.commit()
+            return redirect("/admin/dashboard")  
+
+
+
+    
+@app.route("/service" , methods=["GET","POST"])
+@login_required
+def service():
+    print("hello")
+    if request.method=="POST" and "ns" in request.args:
+        sn=request.form.get("servicename")
+        # sd=request.form.get("desc")
+        bp=request.form.get("baseprice")
+        add_ser=Services(s_name=sn,baseprice=bp)
+        db.session.add(add_ser)
+        db.session.commit()
+        return redirect("/admin/dashboard/")
+    elif request.method=="POST" and "edit" in request.args:
+        sid=request.args.get("sid")
+        up_ser=db.session.query(Services).filter_by(s_id=sid).first()
+        sn=request.form.get("servicename")
+        # sd=request.form.get("desc")
+        bp=request.form.get("baseprice")
+        if sn:
+            up_ser.s_name=sn
+        # if sd:
+        #     up_ser.s_desc=sd
+        if bp:
+            up_ser.baseprice=bp
+        db.session.commit()
+        return redirect("/admin/dashboard/")
 
 
 @app.route('/logout')
