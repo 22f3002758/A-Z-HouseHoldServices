@@ -40,10 +40,10 @@
               <p class="card-text"><b>City : </b>{{p.servprovider.sp_city}}</p>
               <p>
                 <Strong>Rating : </Strong>
-                {% for i in range(4) %}
+                {% for i in range(p.p_rating) %}
                 <i class="bi bi-star" style="color:rgb(211, 239, 26)"></i>
                 {% endfor %}
-                {% for i in range(5-4) %}
+                {% for i in range(5-p.p_rating) %}
                 <i class="bi bi-star"></i>
                 {% endfor %}
               </p>

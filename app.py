@@ -39,6 +39,7 @@ class Admin(db.Model,UserMixin):
     __tablename__='admin'
 
     admin_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
+    admin_name=db.Column(db.String)
     admin_email=db.Column(db.String,unique=True)
     admin_password=db.Column(db.String,unique=True)
 
@@ -128,7 +129,7 @@ class Request(db.Model):
     r_city=db.Column(db.String)
     r_message=db.Column(db.String)
     r_status=db.Column(db.String)
-    #r_rating=db.Column(db.Integer)
+    r_rating=db.Column(db.Integer)
 
 
 @app.route("/", methods=["GET","POST"])
@@ -174,7 +175,7 @@ def register():
             return redirect("/exist")
         else:
             sp=ServiceProvider(sp_name=spname,sp_address=spaddress, sp_pincode=sppincode,sp_email=spemail,
-                               sp_pwd=sppwd,sp_phone=spphone,sp_exp=spexp,sp_warn=0)
+                               sp_pwd=sppwd,sp_phone=spphone,sp_exp=spexp,sp_warn=0,sp_rating=0)
             db.session.add(sp)
             db.session.commit()  
             return redirect("login.html")
@@ -226,7 +227,7 @@ def Dashboard():
             serv.append(ser.s_name)
 
         req=db.session.query(Request).filter_by(c_id=current_user.c_id).all()    
-        return render_template("/Customer/CustomerDashboard.html",servname=serv,requests=req)
+        return render_template("/Customer/CustomerDashboard.html",servname=serv,requests=req,cu=current_user)
     
 @app.route("/customer/book", methods=["GET","POST"])
 def book():
@@ -269,10 +270,25 @@ def book():
         rcity = request.form.get("c_city")
         rmsg = request.form.get("msg")
         rstatus = "Requested"
-        R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_message=rmsg,r_status=rstatus )
+        R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_message=rmsg,r_status=rstatus,r_rating=0)
         db.session.add(R)
         db.session.commit()
         return redirect("/customer/Dashboard")
+    
+@app.route("/rating",methods=["GET","POST"])
+def rating():
+    if request.method=="POST"  :
+        rate=request.form.get("rate")
+        pack=request.args.get("pack")
+        rid=request.args.get("rid")
+        p=db.session.query(Package).filter_by(p_id=pack).first()
+        req=db.session.query(Request).filter_by(r_id=rid).first()
+        p.p_rating=rate
+        req.r_rating=rate
+        req.r_status="Closed"
+        db.session.commit()
+        return redirect("/customer/Dashboard")
+
     
 
 @app.route("/customer/search",methods=["GET","POST"])
@@ -325,7 +341,17 @@ def SPDashboard():
         Opser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Accepted").all()
         reqser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Requested").all()
         closeser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Closed").all()
-        return render_template("/ServiceProvider/serviceprovider.html",todays_requests=r,open_services=Opser,requested_services=reqser,closed_services=closeser)
+        mypack=current_user.mypackages
+        rate=0
+        for p in mypack:
+            rate+=p.p_rating
+        rating=rate/len(mypack)
+        
+        current_user.sp_rating=rating
+        db.session.commit()
+        print(current_user.sp_rating)
+        return render_template("/ServiceProvider/serviceprovider.html",cu=current_user,
+                               rating=current_user.sp_rating,todays_requests=r,open_services=Opser,requested_services=reqser,closed_services=closeser)
 
 @app.route("/serviceprovider/create",methods=["GET","POST"])
 def create_pack():
@@ -351,7 +377,7 @@ def create_pack():
         pn=request.form.get("pname")
         pd=request.form.get("pdesc")
         pp=request.form.get("pprice")
-        create_pack=Package(p_price=pp,p_name=pn,p_description=pd,sp_id=current_user.sp_id,s_id=current_user.service.s_id)
+        create_pack=Package(p_price=pp,p_name=pn,p_description=pd,sp_id=current_user.sp_id,s_id=current_user.service.s_id,p_rating=0)
         db.session.add(create_pack)
         db.session.commit()
         return redirect("/serviceprovider/create")

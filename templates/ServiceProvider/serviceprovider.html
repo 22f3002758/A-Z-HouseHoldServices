@@ -1,7 +1,17 @@
 {% extends "/ServiceProvider/serviceprovider_base.html" %}
 {% block content %}
-<h1 class="mb-4">Hi, Username!!</h1>
-           
+<div class="d-flex">
+  <h1 class="mb-4 me-auto" >Hi, {{cu.sp_name}}!!</h1>
+  <div> 
+    <p><strong>Overall Rating</strong></p>
+    {% for i in range(rating) %}
+      <i class="bi bi-star" style="color:rgb(211, 239, 26)"></i>
+    {% endfor %}
+    {% for i in range(5-rating) %}
+      <i class="bi bi-star"></i>
+    {% endfor %}
+  </div>                
+</div>           
             
 
 <!-- Service History Table -->
@@ -217,7 +227,12 @@ Services
             <td>{{request.r_date}}</td>
             <td>{{request.r_status}}</td>
               <td>
-              <i class="bi bi-star"></i>
+                {% for i in range(request.r_rating) %}
+                <i class="bi bi-star" style="color:rgb(211, 239, 26)"></i>
+                {% endfor %}
+                {% for i in range(5-request.r_rating) %}
+                <i class="bi bi-star"></i>
+                {% endfor %}
               </td>
           </tr>
         {% endfor %}  
