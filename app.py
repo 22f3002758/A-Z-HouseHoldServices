@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Table, Column, Integer, String, ForeignKey,Nullable
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user,UserMixin
 import datetime
+import matplotlib.pyplot as plt
 
 app=Flask(__name__)# create constructor
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///api_database.sqlite3'
@@ -13,26 +14,6 @@ login_manager=LoginManager(app)
 
 app.app_context().push()# push it in the server
 
-class UserMixin:
-    def __init__(self,utype):
-        self.ut=utype
-
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return True
-
-    def is_anonymous(self):
-        return False
-
-    def get_id(self,ut):
-        if self.ut=="Customer":
-            return str(self.c_id)
-        elif self.ut=="ServiceProvider":
-            return str(self.sp_id)
-        else:
-            return str(self.admin_id)
 
 
 class Admin(db.Model,UserMixin):
@@ -130,6 +111,24 @@ class Request(db.Model):
     r_message=db.Column(db.String)
     r_status=db.Column(db.String)
     r_rating=db.Column(db.Integer)
+    all_messages=db.relationship("Messages",backref="req")
+
+class Messages(db.Model):
+    __tablename__="messages"  
+
+    m_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
+    r_id=db.Column(db.Integer, db.ForeignKey("request.r_id"),nullable=False)
+    m_content=db.Column(db.String)
+    m_sender=db.Column(db.String)
+
+# class Warning(db.Model):
+#     __tablename__="warning"
+
+#     w_id=db.Column(db.Integer, primary_key=True, autoincrement= True)  
+#     w_content=db.Column(db.String)
+#     w_reciever=db.Column(db.String) 
+    
+
 
 
 @app.route("/", methods=["GET","POST"])
@@ -179,6 +178,32 @@ def register():
             db.session.add(sp)
             db.session.commit()  
             return redirect("login.html")
+        
+@app.route("/profile-update", methods=["GET","POST"])
+def update():
+    if request.method=="POST" and request.args.get("utype")=="customer":
+        cu=current_user
+        cn=request.form.get("cname")
+        ce=request.form.get("cemail")
+        cc=request.form.get("ccity")
+        cp=request.form.get("phone")
+        ca=request.form.get("cadd")
+        cpwd=request.form.get("cpwd")
+        if cn:
+            cu.c_name=cn
+        if ce:
+            cu.c_email=ce
+        if cp:
+            cu.c_phone=cp
+        if ca:
+            cu.c_address=ca
+        if cpwd:
+            cu.c_password=cpwd
+        if cc:
+            cu.c_city=cc
+        db.session.commit()
+        return redirect("/customer/Dashboard")    
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -295,15 +320,16 @@ def rating():
 def search():
         
     if request.method=="GET" and "sname" in request.args:
+        
         s=request.args.get("sname")
         ser=db.session.query(Services).filter_by(s_name=s).first()
         pack=ser.packages
         Servis=db.session.query(Services).all()
-        return render_template("/Customer/custsearch.html",package=pack,Services=Servis)
+        return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user)
     
     elif request.method=="GET" :
         Servis=db.session.query(Services).all()
-        return render_template("/Customer/custsearch.html",Services=Servis)
+        return render_template("/Customer/custsearch.html",Services=Servis,cu=current_user)
     
    
     elif request.method=="POST":    
@@ -315,7 +341,55 @@ def search():
         for sp in Servisprovider:
             for p in sp.mypackages:
                 pack.append(p)        
-        return render_template("/Customer/custsearch.html",package=pack,Services=Servis)
+        return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user)
+        
+
+@app.route("/customer/stats",methods=["GET","POST"])  
+def cus_stats():
+    if request.method=="GET":
+        cu=current_user 
+        
+        f=[0,0,0]
+        c_req=current_user.Sent_Request
+        for req in c_req:
+            d=req.r_date.split("-")
+            if req.r_status=="Accepted":
+                f[0]+=1
+            elif req.r_status=="Rejected":
+                f[1]+=1
+            elif req.r_status=="Closed":
+                f[2]+=1       
+        X=["Accepted","Rejected","Closed"]
+        plt.bar(X, f, color='r')
+        
+        plt.savefig("./static/cus/bar1.png")
+
+        return render_template("/customer/cus_stats.html",cu=cu)
+    
+
+@app.route("/admin/stats",methods=["GET","POST"])  
+def ad_stats():
+    if request.method=="GET":
+        cu=current_user 
+        req=db.session.query(Request).all()
+        
+        f=[0,0,0]
+        
+        for r in req:
+            
+            if r.r_status=="Accepted":
+                f[0]+=1
+            elif r.r_status=="Requested":
+                f[1]+=1
+            elif r.r_status=="Closed":
+                f[2]+=1       
+        X=["Accepted","Rejected","Closed"]
+        plt.bar(X, f, color='r')
+        
+        plt.savefig("./static/ad/bar1.png")
+
+        return render_template("/admin/ad_stats.html",cu=cu)   
+        
 
 @app.route("/serviceprovider/dashboard", methods=["GET","POST"])
 @login_required
@@ -382,6 +456,28 @@ def create_pack():
         db.session.commit()
         return redirect("/serviceprovider/create")
     
+@app.route("/serviceprovider/stats",methods=["GET","POST"])  
+def stats():
+    if request.method=="GET":
+        cu=current_user 
+        f=[0,0,0]
+        sp_req=current_user.receive_request
+        for req in sp_req:
+            d=req.r_date.split("-")
+            if req.r_status=="Accepted":
+                f[0]+=1
+            elif req.r_status=="Rejected":
+                f[1]+=1
+            elif req.r_status=="Closed":
+                f[2]+=1       
+        X=["Accepted","Rejected","Closed"]
+        # plot bars in stack manner
+        plt.bar(X, f, color='r')
+        
+        plt.savefig("./static/sp/bar1.png")
+
+        return render_template("/ServiceProvider/sp_stats.html",cu=cu)
+             
 @app.route("/admin/dashboard/",methods=["GET","POST"]) 
 @login_required
 def dashboard():
@@ -427,22 +523,27 @@ def flag():
 
 @app.route("/warning", methods=["GET","POST"])
 def warning():
-        if request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="Active":
-            spid=request.args.get("spid")
-            msg=request.form.get("msg")
-            sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
-            sp.sp_warn+=1
-            sp.sp_warn_msg=msg
-            db.session.commit()
-            return redirect("/admin/dashboard") 
-        elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="Active":
-            cid=request.args.get("cid")
-            msg=request.form.get("msg")
-            c=db.session.query(Customer).filter_by(c_id=cid).first()
-            c.c_warn+=1
-            c.sp_warn_msg=msg
-            db.session.commit()
-            return redirect("/admin/dashboard")  
+    if request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="Active":
+        spid=request.args.get("spid")
+        msg=request.form.get("msg")
+        sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+        sp.sp_warn+=1
+        sp.sp_warn_msg=msg
+        db.session.commit()
+        return redirect("/admin/dashboard") 
+    elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="Active":
+        cid=request.args.get("cid")
+        msg=request.form.get("msg")
+        c=db.session.query(Customer).filter_by(c_id=cid).first()
+        c.c_warn+=1
+        c.sp_warn_msg=msg
+        db.session.commit()
+        return redirect("/admin/dashboard")  
+    
+          
+# @app.route("/messages",methods=["GET","POST"])
+# def messages():  
+#     if request.method=='POST' and          
 
 
 

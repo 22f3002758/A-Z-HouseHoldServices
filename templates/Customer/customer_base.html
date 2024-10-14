@@ -27,7 +27,7 @@
                 <a class="nav-link text-white" href="/customer/search"><i class="bi bi-search"></i><span class="px-3">Search</span></a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-white" href="#"><i class="bi bi-graph-up"></i><span class="px-3">Stats</span></a>
+                <a class="nav-link text-white" href="/customer/stats"><i class="bi bi-graph-up"></i><span class="px-3">Stats</span></a>
               </li>
               <li class="nav-item">
                 <a class="nav-link text-white" href="/logout"><i class="bi bi-box-arrow-right"></i><span class="px-3">Logout</span></a>
@@ -44,12 +44,70 @@
                 <i class="bi bi-person-circle fs-3"></i>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li ><a href="#profile" class="dropdown-item" data-bs-toggle="modal">Profile</a></li>
                 <li><a class="dropdown-item" href="/logout">Logout</a></li>
               </ul>
             </div>
           </nav>
-
+                    
+          <!-- Modal -->
+          <div class="modal fade" id="profile" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Edit Profile</Strong></h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="container d-flex justify-content-center align-items-center v">
+                  <div class="card p-4 mt-5" style="width: 40rem;">
+                      
+                      <h1 class="h3 mb-3 fw-normal text-center">Edit your profile</h1>
+                      <form action="/profile-update?utype=customer" method="POST">
+                          <div class="row g-2 mb-3">
+                              <div class="col">
+                                  <div class="form-floating">
+                                      <input type="text" class="form-control"  name="cname" placeholder="{{ cu.c_name }}">
+                                      <label for="floatingName">Name</label>
+                                  </div>
+                              </div>
+                              <div class="col">
+                                  <div class="form-floating">
+                                      <input type="email" class="form-control" id="floatingEmail" name="cemail" placeholder="{{cu.c_email}}">
+                                      <label for="floatingEmail">Email</label>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="row g-2 mb-3">
+                              <div class="col">
+                                  <div class="form-floating">
+                                      <input type="tel" class="form-control" id="floatingPhone" name="cphone" placeholder="{{cu.c_phone}}">
+                                      <label for="floatingPhone">Phone</label>
+                                  </div>
+                              </div>
+                              <div class="col">
+                                  <div class="form-floating">
+                                      <input type="text" class="form-control" id="floatingCity" name="ccity" placeholder="{{cu.c_city}}">
+                                      <label for="floatingCity">City</label>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="form-floating mb-3">
+                              <input type="text" class="form-control" id="floatingaddress" name="cadd" placeholder="{{cu.c_address}}">
+                              <label for="floatingaddress">Address</label>
+                          </div>
+                          
+                          <div class="form-floating mb-3">
+                              <input type="password" class="form-control" id="floatingPassword" name="cpwd" placeholder="Password">
+                              <label for="floatingPassword">Password</label>
+                          </div>
+                          <button class="w-100 btn btn-lg btn-primary" type="submit">Update</button>
+                      </form>
+                      
+                  </div>
+              </div>
+              </div>
+            </div>
+          </div>
 
           <!-- Main Content -->
           <main class="p-3">
