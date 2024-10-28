@@ -8,18 +8,16 @@
 <!-- Service History Table -->
 <h4 class="mt-4"> Services</h4>
 <div class="card shadow-lg">
-  <div class="card-header">
-      Services
-  </div>
+  
   <div class="card-body">
       <table class="table">
           <thead>
               <tr>
                   <th>Service Name</th>
-                  <th>Associte Providers</th>
-                  <th>No.Packages</th>
-                  <th>Base Price</th>
-                  <th>Actions</th>
+                  <th class="text-center">Associate Providers</th>
+                  <th class="text-center">No.Packages</th>
+                  <th class="text-center">Base Price</th>
+                  <th class="text-center">Actions</th>
               </tr>
           </thead>
           <tbody>
@@ -28,12 +26,12 @@
                   
                   <td>{{s.s_name}}</td>
                   
-                  <td>{{s.Sproviders|length}}</td>
-                  <td>{{s.packages|length}}</td>
-                  <td>{{s.baseprice}}</td>
+                  <td class="text-center">{{s.Sproviders|length}}</td>
+                  <td class="text-center">{{s.packages|length}}</td>
+                  <td class="text-center">{{s.baseprice}}</td>
                   <!-- <td>Edit/Deleted</td> -->
                   <!-- <td><span class="badge bg-info text-dark">Requested</span></td> -->
-                  <td class="action-btns">
+                  <td class="action-btns text-center" >
                     
                     
                     <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#editservice-{{s.s_id}}" >
@@ -114,9 +112,7 @@
 <!-- ********** -->
 <h4 class="mt-4"> Professional</h4>
 <div class="card shadow-lg">
-  <div class="card-header">
-      Services
-  </div>
+  
   <div class="card-body">
     <p class="d-inline-flex gap-5">
         <button class="btn btn-primary accordian-button" type="button" data-bs-toggle="collapse" data-bs-target="#activeprofessional" aria-expanded="false" aria-controls="activeprofessional">
@@ -154,7 +150,15 @@
                     <td>{{sp.sp_city}}</td>
                     <td>{{sp.mypackages|length}}</td>
                     <td>{{sp.sp_phone}}</td>
-                    <td>{{sp.sp_rating}}</td>
+                    <td>
+                      {% for i in range(sp.sp_rating) %}
+                        <i class="bi bi-star-fill text-warning"></i>
+                      {% endfor %}
+                      {% for i in range(5-sp.sp_rating) %}
+                        <i class="bi bi-star"></i>
+                      {% endfor %}
+                    </td>
+                    
                     <td>{{sp.sp_warn}}</td>
                     <td class="action-btns">
                       
@@ -246,11 +250,12 @@
                       <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#spview-{{sp.sp_id}}" >
                         <i class="bi bi-eye"></i>
                       </button>
-                      <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal fade" id="spview-{{sp.sp_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                           <div class="modal-content">
                             <div class="modal-header">
                               <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Profile Document</Strong></h1>
+                              <img src="{{sp.sp_rfile}}" >
                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body" >
@@ -360,9 +365,7 @@
 <!-- ********** -->
 <h4 class="mt-4"> Customer</h4>
 <div class="card shadow-lg">
-  <div class="card-header">
-      Services
-  </div>
+  
   <div class="card-body">
     <p class="d-inline-flex gap-5">
         <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#activecustomer" aria-expanded="false" aria-controls="collapseExample">

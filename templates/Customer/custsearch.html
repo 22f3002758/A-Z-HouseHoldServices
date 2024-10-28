@@ -24,24 +24,24 @@
 <button type="submit" class="btn btn-primary">Search</button>
 </div>
 </form>
+{% if show=='post' %}
 <h2 class="mb-4 mt-4">Result</h2>
 <div class="card mb-3 shadow-lg mt-4">
 
   <div class="card-body">
-    <div class="row">
+    <div class="row row-cols-1 row-cols-2 row-cols-3 row-cols-4 g-4">
     {% for p in package %}
     <div class="col mb-4">
-      <div class="card shadow-lg" style="width: 18rem;">
-          <!-- <img src="2024-05-22.jpg" class="card-img-top" alt="Cleaning"> -->
+      <div class="card shadow-lg" style="width: 100%;">
+          
           <div class="card-body">
               <h5 class="card-text">{{p.p_name}}</h5>
-              <p>{{p.p_id}}</p>
               <p class="card-text"><b>Description : </b>{{p.p_description}}</p>
               <p class="card-text"><b>City : </b>{{p.servprovider.sp_city}}</p>
               <p>
                 <Strong>Rating : </Strong>
                 {% for i in range(p.p_rating) %}
-                <i class="bi bi-star" style="color:rgb(211, 239, 26)"></i>
+                <i class="bi bi-star-fill text-warning"></i>
                 {% endfor %}
                 {% for i in range(5-p.p_rating) %}
                 <i class="bi bi-star"></i>
@@ -74,7 +74,7 @@
                           <strong>Contact no </strong>: {{ p.servprovider.sp_phone}}
                           </div>                                              
                           <div>
-                          <strong>Price </strong> : {{ p.p_price}}
+                          <strong>Price </strong> : {{ p.p_price}}<i class="bi bi-currency-rupee"></i>
                           </div>
                         </div>
                       </div>
@@ -144,4 +144,5 @@
     </div>  
   </div>
 </div>
+{% endif %}
 {% endblock %}  

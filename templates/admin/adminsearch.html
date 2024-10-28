@@ -1,0 +1,205 @@
+{% extends "/admin/admin_base.html" %}
+{% block content %}
+<h2 class="mb-4">Find </h2>
+<form action="/admin/search" method="POST">
+    <div class="mb-3">
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="utype" id="customer" value="customer" >
+        <label class="form-check-label" for="customer">Customer</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="utype" id="serviceprovider" value="serviceprovider">
+        <label class="form-check-label" for="serviceprovider">Service Provider</label>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <input type="text" class="form-control" id="name" name="name" placeholder="Enter the Name">
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+{% if show=='POST' %}
+<h2 class="mb-4 mt-4">Result</h2>
+<div class="card mb-3 shadow-lg mt-4">
+    <div class="card-body">
+        <div class="row row-cols-1 row-cols-2 row-cols-3 row-cols-4 g-4">
+            {% if utype=='serviceprovider' %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Experience</th>
+                        <th>Service Name</th>
+                        <th>City</th>
+                        <th>No.Packages</th>
+                        <th>Phone</th>
+                        <th>Rating</th>
+                        <th>Warnings</th>
+                        <th>Action</th>
+                          
+                    </tr>
+                </thead>  
+                <tbody>
+                    {% for sp in results %}
+                      <tr>
+                          <td>{{sp.sp_name}}</td>
+                          <td>{{sp.sp_exp}}</td>
+                          <td>{{sp.sp_servicename}}</td>
+                          <td>{{sp.sp_city}}</td>
+                          <td>{{sp.mypackages|length}}</td>
+                          <td>{{sp.sp_phone}}</td>
+                          <td>
+                            {% for i in range(sp.sp_rating) %}
+                              <i class="bi bi-star-fill text-warning"></i>
+                            {% endfor %}
+                            {% for i in range(5-sp.sp_rating) %}
+                              <i class="bi bi-star"></i>
+                            {% endfor %}
+                          </td>
+                          
+                          <td>{{sp.sp_warn}}</td>
+                          <td class="action-btns">
+                            
+                            <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#spblock-{{sp.sp_id}}">
+                              <i class="bi bi-flag-fill"></i>
+                            </button>
+                            <div class="modal fade" id="spblock-{{sp.sp_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                              <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                  
+                                  <div class="modal-body" >
+                                    <h5>Are you sure you want to block?</h5>
+                                    
+                                    
+                                  </div>
+                                  <div class="modal-footer">
+                                    <form action="/flag?spid={{sp.sp_id}}&target=sp&action=flag" method="POST">
+                                      <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+                                    </form>
+                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">NO</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#sp-warning-{{sp.sp_id}}" >
+                              <i class="bi bi-exclamation-triangle"></i>
+                            </button>
+                            <div class="modal fade" id="sp-warning-{{sp.sp_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                              <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Send Warning to {{sp.sp_name}}!!</Strong></h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body" >
+                                    <div class="form-floating mb-3">
+                                      <div class="container">
+                                        <form action="/warning?target=sp&action=warning&spid={{sp.sp_id}}" method="POST">
+                                          
+                                          <div class="row mb-3">
+                                            <div class="col-md-8">
+                                              <label class="form-label" for="msg">Message: </label>
+                                              <textarea type="text" rows="2" class="form-control" name="msg" placeholder="Leave your message if any."></textarea>
+                                            </div>
+                                          </div>
+                                                                    
+                                          <input type="submit" value="Send">
+                      
+                                        </form>
+            
+                                      </div>
+                                  </div>
+                                  </div>
+                                  </div>
+                              </div>
+                            </div>
+                          </td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+              </table> 
+              {% else %}
+              <table class="table">
+                <thead>
+                    <tr>
+                      <th>Customer Name</th>
+                      <th>City</th>
+                      <th>Phone no</th>
+                      <th>Warnings</th>
+                      <th>Action</th>                                                            
+                    </tr>
+                </thead>  
+                <tbody>
+                    {% for c in results%}
+                    <tr>
+                        
+                        <td>{{c.c_name}}</td>
+                        <td>{{c.c_city}}</td>
+                        <td>{{c.c_phone}}</td>
+                        <td>{{c.c_warn}}</td>                             
+                        <td class="action-btns">
+                        
+                            <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#cblock-{{c.c_id}}">
+                              <i class="bi bi-flag-fill"></i>
+                            </button>
+                            <div class="modal fade" id="cblock-{{c.c_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                              <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-body" >
+                                        <h5>Are you sure you want to block?</h5>
+                                    </div>
+                                    <div class="modal-footer">
+                                      <form action="/flag?cid={{c.c_id}}&target=c&action=flag" method="POST">
+                                        <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+                                      </form>
+                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">NO</button>
+                                    </div>
+                                </div>
+                              </div>
+                            </div>
+                            <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#c_warning-{{c.c_id}}" >
+                              <i class="bi bi-exclamation-triangle"></i>
+                            </button>
+                            <div class="modal fade" id="c_warning-{{c.c_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                              <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Send Warning to {{c.c_name}}!!</Strong></h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body" >
+                                    <div class="form-floating mb-3">
+                                      <div class="container">
+                                        <form action="/warning?target=c&action=warning&cid={{c.c_id}}" method="POST">
+                                          
+                                          <div class="row mb-3">
+                                            <div class="col-md-8">
+                                              <label class="form-label" for="msg">Message: </label>
+                                              <textarea type="text" rows="2" class="form-control" name="msg" placeholder="Leave your message if any."></textarea>
+                                            </div>
+                                          </div>
+                                                                    
+                                          <input type="submit" value="Send">
+                      
+                                        </form>
+            
+                                      </div>
+                                  </div>
+                                  </div>
+                                  </div>
+                              </div>
+                            </div>
+                          </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table> 
+            {% endif %}
+        </div>
+    </div>
+</div> 
+{% endif %}           
+{% endblock %}    

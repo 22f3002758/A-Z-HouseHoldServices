@@ -40,22 +40,22 @@
 <div class="card mb-3 shadow-lg mt-4">
 
     <div class="card-body">
-      <div class="row">
+      <div class="row row-cols-1 row-cols-2 row-cols-3 row-cols-4 g-4">
       {% for p in mypackage %}
       <div class="col mb-4">
-        <div class="card shadow-lg" style="width: 18rem;">
+        <div class="card shadow-lg" style="width: 100%;">
             <!-- <img src="2024-05-22.jpg" class="card-img-top" alt="Cleaning"> -->
             <div class="card-body">
                 <h5 class="card-text">{{p.p_name}}</h5>
                 <p class="card-text"><b>Description : </b>{{p.p_description}}</p>
-                <p class="card-text"><b>Price : </b>{{p.p_price}}</p>
+                <p class="card-text"><b>Price : </b>{{p.p_price}} <i class="bi bi-currency-rupee"></i></p>
                 <p>
                   <Strong>Rating Recieved : </Strong>
                   {% for i in range(p.p_rating) %}
-                  <i class="bi bi-star" style="color:rgb(211, 239, 26)"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
                   {% endfor %}
                   {% for i in range(5-p.p_rating) %}
-                  <i class="bi bi-star"></i>
+                    <i class="bi bi-star"></i>
                   {% endfor %}
                 </p>
                 

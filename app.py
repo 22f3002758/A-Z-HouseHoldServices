@@ -1,18 +1,48 @@
 from flask import Flask,request, render_template, redirect,url_for
+from flask_restful import Api,Resource,fields,marshal_with
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Table, Column, Integer, String, ForeignKey,Nullable
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user,UserMixin
 import datetime
+import requests
+import matplotlib
+matplotlib.use('agg') # to remove interactive backend
 import matplotlib.pyplot as plt
+import fitz
 
 app=Flask(__name__)# create constructor
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///api_database.sqlite3'
 app.config['SECRET_KEY']="mysecretkey"
 db = SQLAlchemy(app) # connect app with sqlalchemy
+api=Api(app)
 
 login_manager=LoginManager(app)
 
 app.app_context().push()# push it in the server
+
+services_field={
+    "s_name":fields.String,
+    "baseprice":fields.Integer
+}
+
+class CreateService(Resource):
+    @marshal_with(services_field)
+    def post(self):
+        sn=request.json.get("sn")
+        bp=request.json.get("bp")
+        
+        
+        servicename=db.session.query(Services).filter_by(s_name=sn).first()
+        print("hi")
+        if servicename:
+            return "Already Exist"
+        else:
+            add_ser=Services(s_name=sn,baseprice=bp)
+            db.session.add(add_ser)
+            db.session.commit()
+            print("commited")
+            return (add_ser,201)
+api.add_resource(CreateService,"/api/CreateService")        
 
 
 
@@ -40,6 +70,7 @@ class ServiceProvider(db.Model,UserMixin):
     sp_city=db.Column(db.String)
     sp_rating=db.Column(db.Integer)
     sp_status=db.Column(db.String)
+    sp_rfile=db.Column(db.String)
     sp_warn=db.Column(db.Integer)
     sp_warn_msg=db.Column(db.String)
     sp_servicename=db.Column(db.String,db.ForeignKey("services.s_name"))
@@ -160,24 +191,31 @@ def register():
         
 
     elif request.method=="GET" and request.args["utype"]=="serviceprovider":
-        return render_template("/ServiceProvider/register_service.html") 
+        serv=db.session.query(Services).all()
+        return render_template("/ServiceProvider/register_service.html",services=serv) 
     elif request.method=="POST" and request.args["utype"]=="serviceprovider":
         spname=request.form.get("s_name")
         spaddress=request.form.get("s_address")
-        sppincode=request.form.get("s_pincode")
+        spcity=request.form.get("s_city")
         spemail=request.form.get("s_email")
-        sppwd=request.form.get("s_pwd")  
+        sppwd=request.form.get("s_password")  
         spexp=request.form.get("s_exp") 
+        sername=request.form.get("s_service")
         spphone=request.form.get("s_phone")
+        sresume=request.files["resume"]
+        pdf=fitz.open(stream=sresume.read(),filetype="pdf")
+        image=pdf.load_page(0).get_pixmap()
+        image.save(f'./static/sp/Resume/{spemail}.png')
         sp=db.session.query(ServiceProvider).filter_by(sp_email=spemail).first()
         if sp:
             return redirect("/exist")
         else:
-            sp=ServiceProvider(sp_name=spname,sp_address=spaddress, sp_pincode=sppincode,sp_email=spemail,
-                               sp_pwd=sppwd,sp_phone=spphone,sp_exp=spexp,sp_warn=0,sp_rating=0)
+            sp=ServiceProvider(sp_name=spname,sp_address=spaddress, sp_city=spcity,sp_email=spemail,
+                               sp_password=sppwd,sp_phone=spphone,sp_exp=spexp,sp_warn=0,sp_status="Requested",
+                               sp_rating=0,sp_rfile=f'/static/sp/Resume/{spemail}.png',sp_servicename=sername)
             db.session.add(sp)
             db.session.commit()  
-            return redirect("login.html")
+            return redirect("/login")
         
 @app.route("/profile-update", methods=["GET","POST"])
 def update():
@@ -323,9 +361,10 @@ def search():
         
         s=request.args.get("sname")
         ser=db.session.query(Services).filter_by(s_name=s).first()
-        pack=ser.packages
+        pack = db.session.query(Package).filter_by(s_id=ser.s_id).order_by(Package.p_rating.desc()).all()
+
         Servis=db.session.query(Services).all()
-        return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user)
+        return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user,show='post')
     
     elif request.method=="GET" :
         Servis=db.session.query(Services).all()
@@ -341,7 +380,7 @@ def search():
         for sp in Servisprovider:
             for p in sp.mypackages:
                 pack.append(p)        
-        return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user)
+        return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user,show='post')
         
 
 @app.route("/customer/stats",methods=["GET","POST"])  
@@ -363,6 +402,7 @@ def cus_stats():
         plt.bar(X, f, color='r')
         
         plt.savefig("./static/cus/bar1.png")
+        plt.clf
 
         return render_template("/customer/cus_stats.html",cu=cu)
     
@@ -408,24 +448,37 @@ def SPDashboard():
         r.r_status="Rejected"
         db.session.commit()
         return redirect("/serviceprovider/dashboard")
+    elif request.method=="GET" and 'close' in request.args:
+        id=request.args.get("rid")
+        r=db.session.query(Request).filter_by(r_id=id).first()
+        r.r_status="Finished"
+        db.session.commit()
+        return redirect("/serviceprovider/dashboard")
+
     elif request.method=="GET":
+
         d=datetime.date.today()
         cd = d.strftime("%d-%m-%Y")
         r=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_date=cd,r_status="Accepted").all()
-        Opser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Accepted").all()
+        Opser = db.session.query(Request).filter_by(sp_id=current_user.sp_id).filter(Request.r_status.in_(["Accepted", "Finished"])).all()
+
+        # Opser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Accepted").all()
         reqser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Requested").all()
         closeser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Closed").all()
         mypack=current_user.mypackages
-        rate=0
-        for p in mypack:
-            rate+=p.p_rating
-        rating=rate/len(mypack)
+        if mypack:
+            rate=0
+            for p in mypack:
+                rate+=p.p_rating
+            rating=rate/len(mypack)
+        else:
+            rating=0   
         
         current_user.sp_rating=rating
         db.session.commit()
         print(current_user.sp_rating)
         return render_template("/ServiceProvider/serviceprovider.html",cu=current_user,
-                               rating=current_user.sp_rating,todays_requests=r,open_services=Opser,requested_services=reqser,closed_services=closeser)
+                               rating=int(current_user.sp_rating),todays_requests=r,open_services=Opser,requested_services=reqser,closed_services=closeser)
 
 @app.route("/serviceprovider/create",methods=["GET","POST"])
 def create_pack():
@@ -491,6 +544,26 @@ def dashboard():
         print(ser)
         return render_template("/admin/Admin_dashboard.html",Services=ser,active=act_sp,requested=req_sp,flagged=flag_sp,cu=current_user,
                                c_active=act_c,c_flag=flag_c)
+    
+@app.route("/admin/search" , methods=["GET", "POST"])  
+@login_required
+def ad_search():
+    if request.method=="GET": 
+        return render_template("/admin/adminsearch.html",cu=current_user)
+    elif request.method=="POST":
+        utype=request.form.get("utype")
+        if utype=="customer":
+            name=request.form.get("name")
+            searchname=f'%{name}%'
+            result=db.session.query(Customer).filter(Customer.c_name.ilike(searchname)).all()
+            
+        else:
+            name=request.form.get("name")    
+            searchname=f'%{name}%'
+            result=db.session.query(ServiceProvider).filter(ServiceProvider.sp_name.ilike(searchname)).all()
+        
+        return render_template("/admin/adminsearch.html",cu=current_user,results=result,show='POST',utype=utype)
+    
 
 @app.route("/flag",methods=["GET","POST"])
 def flag():
@@ -556,10 +629,14 @@ def service():
         sn=request.form.get("servicename")
         # sd=request.form.get("desc")
         bp=request.form.get("baseprice")
-        add_ser=Services(s_name=sn,baseprice=bp)
-        db.session.add(add_ser)
-        db.session.commit()
-        return redirect("/admin/dashboard/")
+        response=requests.post("http://127.0.0.1:5000/api/CreateService",json={"sn":sn,"bp":bp})
+        # add_ser=Services(s_name=sn,baseprice=bp)
+        # db.session.add(add_ser)
+        # db.session.commit()
+        if response.status_code==201:
+            return redirect("/admin/dashboard/")
+        else:
+            return ("Not working",response.status_code)
     elif request.method=="POST" and "edit" in request.args:
         sid=request.args.get("sid")
         up_ser=db.session.query(Services).filter_by(s_id=sid).first()
@@ -582,5 +659,8 @@ def user_logout():
     logout_user()
     return redirect('/login')
 
+    
+
 if __name__=="__main__":
+    
     app.run(debug=True)
