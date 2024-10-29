@@ -1,4 +1,4 @@
-from flask import Flask,request, render_template, redirect,url_for
+from flask import Flask,request, render_template, redirect,url_for,flash
 from flask_restful import Api,Resource,fields,marshal_with
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Table, Column, Integer, String, ForeignKey,Nullable
@@ -10,6 +10,7 @@ matplotlib.use('agg') # to remove interactive backend
 import matplotlib.pyplot as plt
 import fitz
 
+
 app=Flask(__name__)# create constructor
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///api_database.sqlite3'
 app.config['SECRET_KEY']="mysecretkey"
@@ -20,12 +21,13 @@ login_manager=LoginManager(app)
 
 app.app_context().push()# push it in the server
 
+############################################################################################
 services_field={
     "s_name":fields.String,
     "baseprice":fields.Integer
 }
 
-class CreateService(Resource):
+class ServiceApi(Resource):
     @marshal_with(services_field)
     def post(self):
         sn=request.json.get("sn")
@@ -35,16 +37,49 @@ class CreateService(Resource):
         servicename=db.session.query(Services).filter_by(s_name=sn).first()
         print("hi")
         if servicename:
-            return "Already Exist"
+            return {"message": "Service already exists"}, 400
         else:
             add_ser=Services(s_name=sn,baseprice=bp)
             db.session.add(add_ser)
             db.session.commit()
             print("commited")
             return (add_ser,201)
-api.add_resource(CreateService,"/api/CreateService")        
+        
+    @marshal_with(services_field)
+    def put(self):
+        sn=request.json.get("sn")
+        bp=request.json.get("bp")
+        sid=request.json.get("s_id")
+        up_ser=db.session.query(Services).filter_by(s_id=sid).first()
+        if up_ser:
+            if sn:
+                up_ser.s_name=sn
+            if bp:    
+                up_ser.baseprice=bp
+            db.session.commit()
+            return up_ser,200
+        else:
+            return {"message": "Service not found."}, 400
 
 
+
+
+
+
+
+
+
+
+
+
+
+api.add_resource(ServiceApi, '/api/service/create','/api/service/update')
+
+
+
+        
+
+########################################################################################################################
 
 class Admin(db.Model,UserMixin):
     __tablename__='admin'
@@ -152,13 +187,7 @@ class Messages(db.Model):
     m_content=db.Column(db.String)
     m_sender=db.Column(db.String)
 
-# class Warning(db.Model):
-#     __tablename__="warning"
-
-#     w_id=db.Column(db.Integer, primary_key=True, autoincrement= True)  
-#     w_content=db.Column(db.String)
-#     w_reciever=db.Column(db.String) 
-    
+########################################################################################################################
 
 
 
@@ -629,28 +658,26 @@ def service():
         sn=request.form.get("servicename")
         # sd=request.form.get("desc")
         bp=request.form.get("baseprice")
-        response=requests.post("http://127.0.0.1:5000/api/CreateService",json={"sn":sn,"bp":bp})
+        response=requests.post("http://127.0.0.1:5000/api/service/create",json={"sn":sn,"bp":bp})
         # add_ser=Services(s_name=sn,baseprice=bp)
         # db.session.add(add_ser)
         # db.session.commit()
         if response.status_code==201:
             return redirect("/admin/dashboard/")
         else:
-            return ("Not working",response.status_code)
+            flash("service already exist")
+            return redirect("/admin/dashboard/")
     elif request.method=="POST" and "edit" in request.args:
         sid=request.args.get("sid")
-        up_ser=db.session.query(Services).filter_by(s_id=sid).first()
         sn=request.form.get("servicename")
-        # sd=request.form.get("desc")
         bp=request.form.get("baseprice")
-        if sn:
-            up_ser.s_name=sn
-        # if sd:
-        #     up_ser.s_desc=sd
-        if bp:
-            up_ser.baseprice=bp
-        db.session.commit()
-        return redirect("/admin/dashboard/")
+        response=requests.put("http://127.0.0.1:5000/api/service/update",json={"sn":sn,"bp":bp,"s_id":sid})
+        if response.status_code==200:
+            flash("service updated")
+            return redirect("/admin/dashboard/")
+        else:
+            flash("Error in update. Try again")
+            return redirect("/admin/dashboard/")
 
 
 @app.route('/logout')
