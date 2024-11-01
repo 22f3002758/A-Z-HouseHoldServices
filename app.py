@@ -61,26 +61,238 @@ class ServiceApi(Resource):
         else:
             return {"message": "Service not found."}, 400
 
+#booking_field={}
+class BookApi(Resource):
+    #@marshal_with(booking_field)
+    def post(self):
+        spid=request.json.get("spid")
+        pid=request.json.get("pid")
+        cid=request.json.get('cid')
+        rdate = request.json.get("rdate")
+        rtime = request.json.get("rtime")
+        raddress = request.json.get("raddress")
+        rcity = request.json.get("rcity")
+        rmsg = request.json.get("rmsg")
+        rstatus = request.json.get('rstatus')
+        R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_message=rmsg,r_status=rstatus,r_rating=0)
+        db.session.add(R)
+        db.session.commit()
+        return {"message":"Booking request created"}, 200
+    
+    def put(self):
+        if request.args.get('change')=='edit':
+            rid=request.json.get("rid")
+            edate=request.json.get("edate")
+            etime=request.json.get("etime")
+            emsg=request.json.get("emsg")
+            edit_req=db.session.query(Request).filter_by(r_id=rid).first()
+            edit_req.r_date=edate
+            edit_req.r_time=etime
+            edit_req.r_message=emsg
+            db.session.commit()
+            return {'message': "Booking updated"}, 200
+        elif request.json.get('r_status')=='Closed':
+            rid=request.json.get("rid")
+            close_req=db.session.query(Request).filter_by(r_id=rid).first()
+            close_req.r_status="Closed"
+            db.session.commit()
+            return {"message":"Booking request closed"}, 200
+        elif request.json.get('r_status')=='Cancelled':
+            rid=request.json.get("rid")
+            cancel_req=db.session.query(Request).filter_by(r_id=rid).first()
+            cancel_req.r_status="Cancelled"  
+            db.session.commit() 
+            return {"message":"Booking request cancelled"}, 200
+        elif request.json.get('r_status')=='Accepted': 
+            rid=request.json.get("rid")
+            close_req=db.session.query(Request).filter_by(r_id=rid).first()
+            close_req.r_status="Accepted"
+            db.session.commit()
+            return {"message":"Booking request accepted"}, 200
+        elif request.json.get('r_status')=='Rejected': 
+            rid=request.json.get("rid")
+            close_req=db.session.query(Request).filter_by(r_id=rid).first()
+            close_req.r_status="Rejected"
+            db.session.commit()
+            return {"message":"Booking request rejected"}, 200
+        elif request.json.get('r_status')=='Finished': 
+            rid=request.json.get("rid")
+            close_req=db.session.query(Request).filter_by(r_id=rid).first()
+            close_req.r_status="Finished"
+            db.session.commit()
+            return {"message":"Booking request Finished"}, 200
+        
+class FlagApi(Resource):
+    def put(self):
+        if request.json.get("sp_status")=='Flagged':
+            spid=request.json.get("spid")
+            sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+            sp.sp_status="Flagged"
+            db.session.commit()
+            return {"message":"Service Provider Flagged"}, 200
+        elif request.json.get("sp_status")=='UnFlagged':
+            spid=request.json.get("spid")
+            sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+            sp.sp_status="Active"
+            db.session.commit()
+            return {"message":"Service Provider Unflagged"}, 200
+        if request.json.get("c_status")=='Flagged':
+            cid=request.json.get("cid")
+            c=db.session.query(Customer).filter_by(c_id=cid).first()
+            c.c_status="Flagged"
+            db.session.commit()
+            return {"message":"Customer Flagged"}, 200
+        elif request.json.get("c_status")=='UnFlagged':
+            cid=request.json.get("cid")
+            c=db.session.query(Customer).filter_by(c_id=cid).first()
+            c.c_status="Active"
+            db.session.commit()
+            return {"message":"Customer Unflagged"}, 200
+        
+class PackageApi(Resource):
+    def put(self):
+        pid=request.json.get('pid')
+        print("id is:",pid)
+        pn=request.json.get('pn')
+        pd=request.json.get('pd')
+        pp=request.json.get('pp')
+        edit_pack=db.session.query(Package).filter_by(p_id=pid).first()
+        if pn:
+            edit_pack.p_name=pn
+        if pd:
+            edit_pack.p_description=pd
+        if pp:
+            edit_pack.p_price=pp
+        db.session.commit()   
+        return {"message":"Package Updated"}, 200
 
+    def post(self):
+        pn=request.json.get('pn')
+        pd=request.json.get('pd')
+        pp=request.json.get('pp')
+        spid=request.json.get('spid')
+        sid=request.json.get('sid')
+        
+        create_pack=Package(p_price=pp,p_name=pn,p_description=pd,sp_id=spid,s_id=sid,p_rating=0)
+        db.session.add(create_pack)
+        db.session.commit()
+        return {"message":"Package Created"}, 200
+     
+class CustomerApi(Resource):
+    def put(self):
+        cid=request.json.get("cid")
+        cn=request.json.get("cn")
+        ce=request.json.get("ce")
+        cc=request.json.get("cc")
+        cp=request.json.get("cp")
+        ca=request.json.get("ca")
+        cpwd=request.json.get("cpwd")
+        cu=db.session.query(Customer).filter_by(c_id=cid).first()
+        if cn:
+            cu.c_name=cn
+        if ce:
+            cu.c_email=ce
+        if cp:
+            cu.c_phone=cp
+        if ca:
+            cu.c_address=ca
+        if cpwd:
+            cu.c_password=cpwd
+        if cc:
+            cu.c_city=cc
+        db.session.commit()  
+        return {"message" : "Profile Updated"}, 200 
+    
+    def post(self):
+        cname=request.json.get("cname")
+        caddress=request.json.get("caddress")
+        ccity=request.json.get("ccity")
+        cemail=request.json.get("cemail")
+        cpwd=request.json.get("cpwd")
+        cphone=request.json.get("cphone")
+        c=db.session.query(Customer).filter_by(c_email=cemail).first()
 
-
-
-
-
-
-
-
-
-
-
-api.add_resource(ServiceApi, '/api/service/create','/api/service/update')
-
+        if c:
+            return {"message" : "User already Exist"}, 409
+        else:
+            cust=Customer(c_name=cname,c_address=caddress, c_city=ccity,c_email=cemail,c_password=cpwd,c_phone=cphone,c_warn=0,c_status='Active')
+            db.session.add(cust)
+            db.session.commit() 
+            return {"message" : "Profile Created"}, 200
+    
+    
+class ServiceProviderApi(Resource):
+    def post(self):
+        print(f"Content-Type: {request.content_type}")
+        spname=request.form.get("spname")
+        print(spname)
+        spaddress=request.form.get("spaddress")
+        spcity=request.form.get("spcity")
+        spemail=request.form.get("spemail")
+        sppwd=request.form.get("sppwd")  
+        spexp=request.form.get("spexp") 
+        sername=request.form.get("sername")
+        spphone=request.form.get("spphone")
+        sresume=request.files.get("sresume")
+        print("in api")
+        sp=db.session.query(ServiceProvider).filter_by(sp_email=spemail).first()
+        if sp:
+            return {"message" : "User already Exist"}, 409
+        else:
+            pdf=fitz.open(stream=sresume.read(),filetype="pdf")
+            image=pdf.load_page(0).get_pixmap()
+            image.save(f'./static/sp/Resume/{spemail}.png')
+            sp=ServiceProvider(sp_name=spname,sp_address=spaddress, sp_city=spcity,sp_email=spemail,
+                                sp_password=sppwd,sp_phone=spphone,sp_exp=spexp,sp_warn=0,sp_status="Requested",
+                                sp_rating=0,sp_rfile=f'/static/sp/Resume/{spemail}.png',sp_servicename=sername)
+            db.session.add(sp)
+            db.session.commit() 
+            return {"message" : "Profile Created"}, 200
+        
+    def put(self):
+        spid=request.json.get("spid")
+        spname=request.json.get("spname")
+        spaddress=request.json.get("spaddress")
+        spcity=request.json.get("spcity")
+        spemail=request.json.get("spemail")
+        sppwd=request.json.get("sppwd")   
+        spphone=request.json.get("spphone")
+        
+        sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+        
+        if spname:
+            sp.sp_name=spname
+        if spaddress:
+            sp.sp_address=spaddress
+        if spcity:
+            sp.sp_city=spcity
+        if spphone:
+            sp.sp_phone=spphone
+        if sppwd:
+            sp.sp_password=sppwd
+        if spemail:
+            sp.sp_email=spemail
+        db.session.commit()  
+        return {"message" : "Profile Updated"}, 200    
+                            
 
 
         
 
-########################################################################################################################
 
+        
+    
+    
+    
+    
+
+api.add_resource(ServiceApi, '/api/service/create','/api/service/update')
+api.add_resource(BookApi,'/api/book','/api/book/edit')
+api.add_resource(FlagApi,'/api/flag')
+api.add_resource(PackageApi,'/api/package/create','/api/package')
+api.add_resource(CustomerApi,'/api/customer/register','/api/customer/update')
+api.add_resource(ServiceProviderApi,'/api/serviceprovider/register','/api/serviceprovider/update')
+#####################################################################################################################################3
 class Admin(db.Model,UserMixin):
     __tablename__='admin'
 
@@ -204,47 +416,40 @@ def register():
     elif request.method=="POST" and request.args["utype"]=="customer":
         cname=request.form.get("c_name")
         caddress=request.form.get("c_address")
-        cpincode=request.form.get("c_pincode")
+        ccity=request.form.get("c_city")
         cemail=request.form.get("c_email")
         cpwd=request.form.get("c_pwd")
         cphone=request.form.get("c_phone")
-        c=db.session.query(Customer).filter_by(c_email=cemail).first()
-
-        if c:
-            return redirect("/exist")
+        response=requests.post("http://127.0.0.1:5000/api/customer/register",json={"cname":cname,'caddress': caddress,'ccity':ccity,'cemail':cemail,"cpwd":cpwd,"cphone":cphone})
+        if response.status_code==200:
+            return redirect("/login")
         else:
-            cust=Customer(c_name=cname,c_address=caddress, c_pincode=cpincode,c_email=cemail,c_pwd=cpwd,c_phone=cphone,c_warn=0)
-            db.session.add(cust)
-            db.session.commit()   
-            return redirect("login.html")
-        
+            flash(response.json()['message'])
+            return redirect("/register?utype=customer")       
 
     elif request.method=="GET" and request.args["utype"]=="serviceprovider":
         serv=db.session.query(Services).all()
+        
         return render_template("/ServiceProvider/register_service.html",services=serv) 
     elif request.method=="POST" and request.args["utype"]=="serviceprovider":
-        spname=request.form.get("s_name")
-        spaddress=request.form.get("s_address")
-        spcity=request.form.get("s_city")
-        spemail=request.form.get("s_email")
-        sppwd=request.form.get("s_password")  
-        spexp=request.form.get("s_exp") 
-        sername=request.form.get("s_service")
-        spphone=request.form.get("s_phone")
+        spname=request.form.get("sp_name")
+        spaddress=request.form.get("sp_address")
+        spcity=request.form.get("sp_city")
+        spemail=request.form.get("sp_email")
+        sppwd=request.form.get("sp_password")  
+        spexp=request.form.get("sp_exp") 
+        sername=request.form.get("sp_service")
+        spphone=request.form.get("sp_phone")
         sresume=request.files["resume"]
-        pdf=fitz.open(stream=sresume.read(),filetype="pdf")
-        image=pdf.load_page(0).get_pixmap()
-        image.save(f'./static/sp/Resume/{spemail}.png')
-        sp=db.session.query(ServiceProvider).filter_by(sp_email=spemail).first()
-        if sp:
-            return redirect("/exist")
-        else:
-            sp=ServiceProvider(sp_name=spname,sp_address=spaddress, sp_city=spcity,sp_email=spemail,
-                               sp_password=sppwd,sp_phone=spphone,sp_exp=spexp,sp_warn=0,sp_status="Requested",
-                               sp_rating=0,sp_rfile=f'/static/sp/Resume/{spemail}.png',sp_servicename=sername)
-            db.session.add(sp)
-            db.session.commit()  
+        print("i am here")
+        response=requests.post("http://127.0.0.1:5000/api/serviceprovider/register",data={"spname":spname,'spaddress': spaddress,'spcity':spcity,'spemail':spemail,"sppwd":sppwd,"spexp":spexp,"sername":sername,"spphone":spphone},files={"sresume": (sresume.filename, sresume, sresume.content_type)})
+        if response.status_code==200:
             return redirect("/login")
+        else:
+            print(response.status_code)
+            flash(response.data()['message'])
+            return redirect("/register?utype=serviceprovider")
+
         
 @app.route("/profile-update", methods=["GET","POST"])
 def update():
@@ -256,20 +461,29 @@ def update():
         cp=request.form.get("phone")
         ca=request.form.get("cadd")
         cpwd=request.form.get("cpwd")
-        if cn:
-            cu.c_name=cn
-        if ce:
-            cu.c_email=ce
-        if cp:
-            cu.c_phone=cp
-        if ca:
-            cu.c_address=ca
-        if cpwd:
-            cu.c_password=cpwd
-        if cc:
-            cu.c_city=cc
-        db.session.commit()
-        return redirect("/customer/Dashboard")    
+        
+        response=requests.put("http://127.0.0.1:5000/api/customer/update",json={"cn":cn,'ce': ce,'cc':cc,'cp':ca,'cpwd':cpwd,'cid':current_user.c_id})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/customer/Dashboard")
+        else:
+            return "something went wrong"
+    if request.method=="POST" and request.args.get("utype")=="serviceprovider":  
+        spid=current_user.sp_id
+        spname=request.form.get("sp_name")
+        spaddress=request.form.get("sp_address")
+        spcity=request.form.get("sp_city")
+        spemail=request.form.get("sp_email")
+        sppwd=request.form.get("sp_pwd")  
+
+        spphone=request.form.get("sp_phone")
+        response=requests.put("http://127.0.0.1:5000/api/serviceprovider/update",json={"spid":spid,'spname': spname,'spaddress':spaddress,'spcity':spcity,'spemail':spemail,'sppwd':sppwd,"spphone":spphone})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/serviceprovider/dashboard")
+        else:
+            return "something went wrong"  
+    
 
 
 @login_manager.user_loader
@@ -328,44 +542,49 @@ def book():
         edate=request.form.get("Date")
         etime=request.form.get("Time")
         emsg=request.form.get("msg")
-        edit_req=db.session.query(Request).filter_by(r_id=rid).first()
-        edit_req.r_date=edate
-        edit_req.r_time=etime
-        edit_req.r_message=emsg
-        db.session.commit()
+        response=requests.put("http://127.0.0.1:5000/api/book/edit?change=edit",json={"rid":rid,"edate":edate,"etime":etime,"emsg":emsg})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/customer/Dashboard")
+        else:
+            return "something went wrong"
         return redirect("/customer/Dashboard")
-    elif request.method=="POST" and "delete" in request.args:
+    elif request.method=="POST" and "cancel" in request.args:
         rid=request.args.get("rid")
-        print("start")
-        delete_req=db.session.query(Request).filter_by(r_id=rid).first()
-        db.session.delete(delete_req)
-        db.session.commit()
-        print("Done")
+        response=requests.put("http://127.0.0.1:5000/api/book/edit",json={"rid":rid,'r_status':"Cancelled"})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/customer/Dashboard")
+        else:
+            return "something went wrong"
         return redirect("/customer/Dashboard")
     elif request.method=="POST" and "close" in request.args:
         rid=request.args.get("rid")
-        
-        close_req=db.session.query(Request).filter_by(r_id=rid).first()
-        close_req.r_status="Closed"
-        db.session.commit()
+        response=requests.put("http://127.0.0.1:5000/api/book/edit",json={"rid":rid,'r_status':"Closed"})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/customer/Dashboard")
+        else:
+            return "something went wrong"
+
         
         return redirect("/customer/Dashboard")
     elif request.method == "POST":
         spid=request.args.get("spid")
         pid=request.args.get("pid")
-        print(pid)
         cid=current_user.c_id
         rdate = request.form.get("Date")
         rtime = request.form.get("Time")
-        print(rdate,rtime)
         raddress = request.form.get("c_add")
         rcity = request.form.get("c_city")
         rmsg = request.form.get("msg")
         rstatus = "Requested"
-        R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_message=rmsg,r_status=rstatus,r_rating=0)
-        db.session.add(R)
-        db.session.commit()
-        return redirect("/customer/Dashboard")
+        response=requests.post("http://127.0.0.1:5000/api/book",json={"spid":spid,"pid":pid,"cid":cid,"rdate":rdate,"rtime":rtime,"rcity":rcity,"rmsg":rmsg,"rstatus":rstatus})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/customer/Dashboard")
+        else:
+            return "something went wrong"
     
 @app.route("/rating",methods=["GET","POST"])
 def rating():
@@ -466,24 +685,30 @@ def SPDashboard():
     
     if request.method=="GET" and "accept" in request.args:
         
-        id=request.args.get("rid")
-        r=db.session.query(Request).filter_by(r_id=id).first()
-        r.r_status="Accepted"
-        db.session.commit()
-        return redirect("/serviceprovider/dashboard")
-    elif request.method=="POST" and "reject" in request.args:
-        id=request.args.get("rid")
-        r=db.session.query(Request).filter_by(r_id=id).first()
-        r.r_status="Rejected"
-        db.session.commit()
-        return redirect("/serviceprovider/dashboard")
-    elif request.method=="GET" and 'close' in request.args:
-        id=request.args.get("rid")
-        r=db.session.query(Request).filter_by(r_id=id).first()
-        r.r_status="Finished"
-        db.session.commit()
-        return redirect("/serviceprovider/dashboard")
+        rid=request.args.get("rid")
+        
+        response=requests.put("http://127.0.0.1:5000/api/book/edit",json={"rid":rid,'r_status': 'Accepted'})
+        if response.status_code==200:
+            return redirect("/serviceprovider/dashboard")
+        else:
+            return "something went wrong"
 
+    elif request.method=="POST" and "reject" in request.args:
+        rid=request.args.get("rid")
+        response=requests.put("http://127.0.0.1:5000/api/book/edit",json={"rid":rid,'r_status': 'Rejected'})
+        if response.status_code==200:
+            return redirect("/serviceprovider/dashboard")
+        else:
+            return "something went wrong"
+        
+    elif request.method=="GET" and 'close' in request.args:
+        rid=request.args.get("rid")
+        response=requests.put("http://127.0.0.1:5000/api/book/edit",json={"rid":rid,'r_status': 'Finished'})
+        if response.status_code==200:
+            return redirect("/serviceprovider/dashboard")
+        else:
+            return "something went wrong"
+        
     elif request.method=="GET":
 
         d=datetime.date.today()
@@ -493,7 +718,7 @@ def SPDashboard():
 
         # Opser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Accepted").all()
         reqser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Requested").all()
-        closeser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Closed").all()
+        closeser=db.session.query(Request).filter(Request.sp_id==current_user.sp_id,Request.r_status.in_(["Closed", "Cancelled"])).all()
         mypack=current_user.mypackages
         if mypack:
             rate=0
@@ -505,7 +730,7 @@ def SPDashboard():
         
         current_user.sp_rating=rating
         db.session.commit()
-        print(current_user.sp_rating)
+        
         return render_template("/ServiceProvider/serviceprovider.html",cu=current_user,
                                rating=int(current_user.sp_rating),todays_requests=r,open_services=Opser,requested_services=reqser,closed_services=closeser)
 
@@ -519,24 +744,38 @@ def create_pack():
         pn=request.form.get("pname")
         pd=request.form.get("pdesc")
         pp=request.form.get("pprice")
-        edit_pack=db.session.query(Package).filter_by(p_id=pid).first()
-        if pn:
-            edit_pack.p_name=pn
-        if pd:
-            edit_pack.p_description=pd
-        if pp:
-            edit_pack.p_price=pp
-        db.session.commit()
-        return redirect("/serviceprovider/create")
+        # edit_pack=db.session.query(Package).filter_by(p_id=pid).first()
+        # if pn:
+        #     edit_pack.p_name=pn
+        # if pd:
+        #     edit_pack.p_description=pd
+        # if pp:
+        #     edit_pack.p_price=pp
+        # db.session.commit()
+        #return redirect("/serviceprovider/create")
+        response=requests.put("http://127.0.0.1:5000/api/package",json={"pid":pid,'pn': pn,'pd':pd,'pp':pp})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/serviceprovider/dashboard")
+        else:
+            return "something went wrong"
+        
     elif request.method=="POST" and "create" in request.args:
         
         pn=request.form.get("pname")
         pd=request.form.get("pdesc")
         pp=request.form.get("pprice")
-        create_pack=Package(p_price=pp,p_name=pn,p_description=pd,sp_id=current_user.sp_id,s_id=current_user.service.s_id,p_rating=0)
-        db.session.add(create_pack)
-        db.session.commit()
-        return redirect("/serviceprovider/create")
+        # create_pack=Package(p_price=pp,p_name=pn,p_description=pd,sp_id=current_user.sp_id,s_id=current_user.service.s_id,p_rating=0)
+        # db.session.add(create_pack)
+        # db.session.commit()
+        # return redirect("/serviceprovider/create")
+        response=requests.post("http://127.0.0.1:5000/api/package/create",json={'pn': pn,'pd':pd,'pp':pp,'spid':current_user.sp_id,'sid':current_user.service.s_id})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/serviceprovider/dashboard")
+        else:
+            return "something went wrong"
+
     
 @app.route("/serviceprovider/stats",methods=["GET","POST"])  
 def stats():
@@ -598,49 +837,58 @@ def ad_search():
 def flag():
     if request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="flag":
         spid=request.args.get("spid")
-        sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
-        sp.sp_status="Flagged"
-        db.session.commit()
-        return redirect("/admin/dashboard")
+        response=requests.put("http://127.0.0.1:5000/api/flag",json={"spid":spid,'sp_status': 'Flagged'})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/admin/dashboard")
+        else:
+            return "something went wrong"
+
     elif request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="unflag":
         spid=request.args.get("spid")
-        sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
-        sp.sp_status="Active"
-        db.session.commit()
-        return redirect("/admin/dashboard")
+        response=requests.put("http://127.0.0.1:5000/api/flag",json={"spid":spid,'sp_status': 'UnFlagged'})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/admin/dashboard")
+        else:
+            return "something went wrong"
 
     
     elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="flag":
         cid=request.args.get("cid")
-        c=db.session.query(Customer).filter_by(c_id=cid).first()
-        c.c_status="Flagged"
-        db.session.commit()
-        return redirect("/admin/dashboard")
+        response=requests.put("http://127.0.0.1:5000/api/flag",json={"cid":cid,'c_status': 'Flagged'})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/admin/dashboard")
+        else:
+            return "something went wrong"
     elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="unflag" :
         cid=request.args.get("cid")
-        c=db.session.query(Customer).filter_by(c_id=cid).first()
-        c.c_status="Active"
-        db.session.commit()
-        return redirect("/admin/dashboard")
+        response=requests.put("http://127.0.0.1:5000/api/flag",json={"cid":cid,'c_status': 'UnFlagged'})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/admin/dashboard")
+        else:
+            return "something went wrong"
 
-@app.route("/warning", methods=["GET","POST"])
-def warning():
-    if request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="Active":
-        spid=request.args.get("spid")
-        msg=request.form.get("msg")
-        sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
-        sp.sp_warn+=1
-        sp.sp_warn_msg=msg
-        db.session.commit()
-        return redirect("/admin/dashboard") 
-    elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="Active":
-        cid=request.args.get("cid")
-        msg=request.form.get("msg")
-        c=db.session.query(Customer).filter_by(c_id=cid).first()
-        c.c_warn+=1
-        c.sp_warn_msg=msg
-        db.session.commit()
-        return redirect("/admin/dashboard")  
+# @app.route("/warning", methods=["GET","POST"])
+# def warning():
+#     if request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="Active":
+#         spid=request.args.get("spid")
+#         msg=request.form.get("msg")
+#         sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+#         sp.sp_warn+=1
+#         sp.sp_warn_msg=msg
+#         db.session.commit()
+#         return redirect("/admin/dashboard") 
+#     elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="Active":
+#         cid=request.args.get("cid")
+#         msg=request.form.get("msg")
+#         c=db.session.query(Customer).filter_by(c_id=cid).first()
+#         c.c_warn+=1
+#         c.sp_warn_msg=msg
+#         db.session.commit()
+#         return redirect("/admin/dashboard")  
     
           
 # @app.route("/messages",methods=["GET","POST"])

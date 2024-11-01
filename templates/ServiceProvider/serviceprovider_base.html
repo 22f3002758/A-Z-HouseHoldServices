@@ -35,6 +35,7 @@
               </li>
             </ul>
         </nav>
+
  
         <!-- Main Content and Top Navbar -->
         <div class="col-md-9 ms-sm-auto col-lg-10 px-md-0">
@@ -45,11 +46,68 @@
                 <i class="bi bi-person-circle fs-3"></i>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li ><a href="#profile" class="dropdown-item" data-bs-toggle="modal">Profile</a></li>
                 <li><a class="dropdown-item" href="/logout">Logout</a></li>
               </ul>
             </div>
           </nav>
+          <div class="modal fade" id="profile" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Edit Profile</Strong></h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="container d-flex justify-content-center align-items-center v">
+                  <div class="card p-4 mt-5" style="width: 40rem;">
+                      
+                      <h1 class="h3 mb-3 fw-normal text-center">Edit your profile</h1>
+                      <form action="/profile-update?utype=serviceprovider" method="POST">
+                          <div class="row g-2 mb-3">
+                              <div class="col">
+                                  <div class="form-floating">
+                                      <input type="text" class="form-control"  name="sp_name" placeholder="{{ cu.sp_name }}">
+                                      <label for="floatingName">Name</label>
+                                  </div>
+                              </div>
+                              <div class="col">
+                                  <div class="form-floating">
+                                      <input type="email" class="form-control" id="floatingEmail" name="sp_email" placeholder="{{cu.sp_email}}">
+                                      <label for="floatingEmail">Email</label>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="row g-2 mb-3">
+                              <div class="col">
+                                  <div class="form-floating">
+                                      <input type="tel" class="form-control" id="floatingPhone" name="sp_phone" placeholder="{{cu.sp_phone}}">
+                                      <label for="floatingPhone">Phone</label>
+                                  </div>
+                              </div>
+                              <div class="col">
+                                  <div class="form-floating">
+                                      <input type="text" class="form-control" id="floatingCity" name="sp_city" placeholder="{{cu.sp_city}}">
+                                      <label for="floatingCity">City</label>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="form-floating mb-3">
+                              <input type="text" class="form-control" id="floatingaddress" name="sp_address" placeholder="{{cu.sp_address}}">
+                              <label for="floatingaddress">Address</label>
+                          </div>
+                          
+                          <div class="form-floating mb-3">
+                              <input type="password" class="form-control" id="floatingPassword" name="sp_pwd" placeholder="Password">
+                              <label for="floatingPassword">Password</label>
+                          </div>
+                          <button class="w-100 btn btn-lg btn-primary" type="submit">Update</button>
+                      </form>
+                      
+                  </div>
+              </div>
+              </div>
+            </div>
+          </div>
 
 
           <!-- Main Content -->

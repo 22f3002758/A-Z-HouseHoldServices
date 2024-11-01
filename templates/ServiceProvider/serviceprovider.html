@@ -2,6 +2,8 @@
 {% block content %}
 <div class="d-flex">
   <h1 class="mb-4 me-auto" >Hi, {{cu.sp_name}}!!</h1>
+  
+  
   <div> 
     <p><strong>Overall Rating</strong></p>
     {% for i in range(rating) %}
@@ -11,7 +13,21 @@
       <i class="bi bi-star"></i>
     {% endfor %}
   </div>                
-</div>           
+</div> 
+<div class="container mt-3">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div id="flash-messages">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show bg-warning" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close bg-warning" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>          
             
 
 <!-- Service History Table -->
@@ -206,6 +222,15 @@
       </tbody>
     </table>
   </div>
-</div>  
+</div> 
+<script>
+  // Hide flash messages after 3 seconds (3000 milliseconds)
+  setTimeout(function() {
+    var flashMessages = document.getElementById("flash-messages");
+    if (flashMessages) {
+      flashMessages.style.display = "none";
+    }
+  }, 3000);
+</script> 
 {% endblock %}  
 

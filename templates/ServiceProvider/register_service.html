@@ -101,13 +101,13 @@
                 <div class="row g-2 mb-3">
                     <div class="col">
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="floatingName" placeholder="Name" name="s_name">
+                            <input type="text" class="form-control" id="floatingName" placeholder="Name" name="sp_name" required>
                             <label for="floatingName">Name</label>
                         </div>
                     </div>
                     <div class="col">
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="floatingexp" placeholder="Experience" name="s_exp">
+                            <input type="text" class="form-control" id="floatingexp" placeholder="Experience" name="sp_exp" required>
                             <label for="floatingexp">Experience</label>
                         </div>
                     </div>
@@ -115,19 +115,19 @@
                 <div class="row g-2 mb-3">
                     <div class="col">
                         <div class="form-floating">
-                            <input type="tel" class="form-control" id="floatingPhone" placeholder="Phone" name="s_phone">
+                            <input type="tel" class="form-control" id="floatingPhone" placeholder="Phone" name="sp_phone" required>
                             <label for="floatingPhone">Phone</label>
                         </div>
                     </div>
                     <div class="col">
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="floatingCity" placeholder="City" name="s_city">
+                            <input type="text" class="form-control" id="floatingCity" placeholder="City" name="sp_city" required>
                             <label for="floatingCity">City</label>
                         </div>
                     </div>
                 </div>
                 <div class="form-floating mb-3">
-                    <select class="form-select" id="floatingService" name="s_service">
+                    <select class="form-select" id="floatingService" name="sp_service" required>
                         
                         <option selected>Select Service</option>
                         {% for i in services %}
@@ -138,18 +138,18 @@
                 </div>
                 <div class="mb-3">
                     <label for="formFile" class="form-label">Upload File</label>
-                    <input class="form-control" type="file" id="formFile" name="resume">
+                    <input class="form-control" type="file" id="formFile" name="resume" required>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="floatingAdd" placeholder="Address" name="s_address">
+                    <input type="text" class="form-control" id="floatingAdd" placeholder="Address" name="sp_address" required>
                     <label for="floatingAdd">Address</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="email" class="form-control" id="floatingEmail" placeholder="name@example.com" name="s_email">
+                    <input type="email" class="form-control" id="floatingEmail" placeholder="name@example.com" name="sp_email" required>
                     <label for="floatingEmail">Email</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="s_password">
+                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="sp_password" required>
                     <label for="floatingPassword">Password</label>
                 </div>
                 <button class="w-100 btn btn-lg btn-primary" type="submit">Register</button>
