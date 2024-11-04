@@ -2,7 +2,11 @@
 {% block content %}
 <div class="d-flex">
   <h1 class="mb-4 me-auto" >Hi, {{cu.sp_name}}!!</h1>
-  
+  {% if cu.sp_status=="Registered" %}
+    <p> Waiting for admin's approval</p>
+  {% elif cu.sp_status=="Flagged" %}
+    <p> You are blocked by admin.</p>
+  {% else %} 
   
   <div> 
     <p><strong>Overall Rating</strong></p>
@@ -222,7 +226,9 @@
       </tbody>
     </table>
   </div>
+  {% endif %}
 </div> 
+
 <script>
   // Hide flash messages after 3 seconds (3000 milliseconds)
   setTimeout(function() {
@@ -233,4 +239,5 @@
   }, 3000);
 </script> 
 {% endblock %}  
+
 

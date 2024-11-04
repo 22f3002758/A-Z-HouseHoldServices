@@ -2,10 +2,37 @@
 {% block content %}
 
 <div class="card">
-    <div class="card-header"> Overall Status of the Requests</div>
-    <div class="align-items-center">
+    <div class="card-header"> 
+        <div class="row">
+            <div class="col-md-8">
+                Category Specific Request Summary
+            </div>
+            <div class="col-md-4" >
+                <form action="/admin/stats" method="POST">
+                    <!-- <label for="floatingService">Service</label> -->
+                     <div class="d-flex align-items">
+                        <select class="form-select" style="width:10rem" id="floatingService" name="sname" required>
+                            
+                            <option selected>Select Service</option>
+                            {% for i in services %}
+                            <option value="{{i.s_name}}">{{i.s_name}}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-primary ms-3" type="submit">apply</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    <div class="card-body d-flex justify-content-center align-items-center">
         <img src="/static/ad/bar1.png" style="height: 500px; width:400px;">
     </div>
 </div>
-
+<div class="card" >
+    <div class="card-header"> Service Requests Distribution</div>
+    <div class="card-body d-flex justify-content-center align-items-center" >
+        <img src="/static/ad/pie1.png" style="height: 600px; width:600px;">
+    </div>
+</div>
 {% endblock %} 

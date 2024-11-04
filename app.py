@@ -5,10 +5,12 @@ from sqlalchemy import Table, Column, Integer, String, ForeignKey,Nullable
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user,UserMixin
 import datetime
 import requests
+import seaborn as sns
 import matplotlib
 matplotlib.use('agg') # to remove interactive backend
 import matplotlib.pyplot as plt
 import fitz
+import math
 
 
 app=Flask(__name__)# create constructor
@@ -118,7 +120,7 @@ class BookApi(Resource):
         elif request.json.get('r_status')=='Finished': 
             rid=request.json.get("rid")
             close_req=db.session.query(Request).filter_by(r_id=rid).first()
-            close_req.r_status="Finished"
+            close_req.r_status="Closed"
             db.session.commit()
             return {"message":"Booking request Finished"}, 200
         
@@ -129,25 +131,25 @@ class FlagApi(Resource):
             sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
             sp.sp_status="Flagged"
             db.session.commit()
-            return {"message":"Service Provider Flagged"}, 200
+            return {"message":f'{sp.sp_name} has been Flagged'}, 200
         elif request.json.get("sp_status")=='UnFlagged':
             spid=request.json.get("spid")
             sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
             sp.sp_status="Active"
             db.session.commit()
-            return {"message":"Service Provider Unflagged"}, 200
+            return {"message":f'{sp.sp_name} has been Unflagged'}, 200
         if request.json.get("c_status")=='Flagged':
             cid=request.json.get("cid")
             c=db.session.query(Customer).filter_by(c_id=cid).first()
             c.c_status="Flagged"
             db.session.commit()
-            return {"message":"Customer Flagged"}, 200
+            return {"message":f'{c.c_name} has been Flagged'}, 200
         elif request.json.get("c_status")=='UnFlagged':
             cid=request.json.get("cid")
             c=db.session.query(Customer).filter_by(c_id=cid).first()
             c.c_status="Active"
             db.session.commit()
-            return {"message":"Customer Unflagged"}, 200
+            return {"message":f'{c.c_name} has been Unflagged'}, 200
         
 class PackageApi(Resource):
     def put(self):
@@ -273,25 +275,117 @@ class ServiceProviderApi(Resource):
         if spemail:
             sp.sp_email=spemail
         db.session.commit()  
-        return {"message" : "Profile Updated"}, 200    
+        return {"message" : "Profile Updated"}, 200  
+
+class StatisticsApi(Resource):
+    def get(self,u_type):
+        if u_type=='admin':
+            ser=db.session.query(Services).filter_by(s_name='Home Cleaning').first()
+            L=[0,0,0]
+            for i in ser.packages:
+                for j in i.req:
+                    if j.r_status=='Accepted':
+                        L[0]+=1
+                    elif j.r_status=='Closed':
+                        L[1]+=1    
+                    elif j.r_status=='Requested':
+                        L[2]+=1
+                        
+            Xcat = ["Accepted", "Closed", "Requested"]
+            
+            colors = sns.color_palette("pastel", len(Xcat))  
+            fig, ax = plt.subplots()
+            bars = ax.bar(Xcat, L, color=colors)
+            for i, bar in enumerate(bars):
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width() / 2, height + 0.1, f'{height}', ha='center', va='bottom')
+
+            labels = [(label, colors[i]) for i, label in enumerate(Xcat)]
+
+            if labels:
+                for i, (label, color) in enumerate(labels):
+                    fig.text(0.5 + (i - len(labels) / 2) * 0.15, -0.1, label, 
+                            ha='center', va='center', fontsize=10, style='italic', 
+                            bbox=dict(facecolor=color, edgecolor='none', boxstyle='round,pad=0.3'))
+            ax.set_title('Service Requests Distribution')
+            ax.set_ylabel('Number of Requests')
+            plt.savefig("./static/ad/bar1.png", bbox_inches='tight')
+            plt.clf()
+            allser=db.session.query(Services).all()
+            d={}
+            for ser in allser:
+                d[ser.s_name]=0
+                for pack in ser.packages:
+                    for req in pack.req:
+                        if req.r_status=='Closed':
+                            d[ser.s_name]+=1
+            palette = sns.color_palette("pastel", len(d))
+            labels = [key for key, value in d.items() if value > 0]
+            sizes = [value for value in d.values() if value > 0]
+            fig, ax = plt.subplots()
+            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=palette[:len(sizes)])
+            plt.axis('equal')  
+            plt.title('Services wise distribution')
+            zero_labels = [label for label, size in d.items() if size == 0]
+            zero_colors = palette[len(sizes):len(sizes) + len(zero_labels)]
+            if zero_labels:
+                for i, (label, color) in enumerate(zip(zero_labels, zero_colors)):
+                    fig.text(0.5 + (i - len(zero_labels) / 2) * 0.15, -0.05, label, 
+                            ha='center', va='center', fontsize=10, style='italic', 
+                            bbox=dict(facecolor=color, edgecolor='none', boxstyle='round,pad=0.3'))
+            plt.savefig('./static/ad/pie1.png', bbox_inches='tight')
+            plt.clf()
+
+    def post(self,u_type):
+        if u_type=='admin':
+            sn=request.json.get('sname')
+            ser=db.session.query(Services).filter_by(s_name=sn).first()
+            L=[0,0,0]
+            for i in ser.packages:
+                for j in i.req:
+                    if j.r_status=='Accepted':
+                        L[0]+=1
+                    elif j.r_status=='Closed':
+                        L[1]+=1    
+                    elif j.r_status=='Requested':
+                        L[2]+=1
+                        
+            Xcat = ["Accepted", "Closed", "Requested"]
+            
+            colors = sns.color_palette("pastel", len(Xcat))  
+            fig, ax = plt.subplots()
+            bars = ax.bar(Xcat, L, color=colors)
+            for i, bar in enumerate(bars):
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width() / 2, height - 0.1, f'{height}', ha='center', va='bottom')
+
+            labels = [(label, colors[i]) for i, label in enumerate(Xcat)]
+
+            if labels:
+                for i, (label, color) in enumerate(labels):
+                    fig.text(0.5 + (i - len(labels) / 2) * 0.15, -0.1, label, 
+                            ha='center', va='center', fontsize=10, style='italic', 
+                            bbox=dict(facecolor=color, edgecolor='none'))
+            ax.set_title(f'{sn} Request Summary',pad=20)
+            ax.set_ylabel('Number of Requests')
+            plt.savefig("./static/ad/bar1.png", bbox_inches='tight')
+            plt.clf()
+
+
+
+
+    
+
                             
-
-
-        
-
-
-        
-    
-    
-    
-    
-
 api.add_resource(ServiceApi, '/api/service/create','/api/service/update')
 api.add_resource(BookApi,'/api/book','/api/book/edit')
 api.add_resource(FlagApi,'/api/flag')
 api.add_resource(PackageApi,'/api/package/create','/api/package')
 api.add_resource(CustomerApi,'/api/customer/register','/api/customer/update')
 api.add_resource(ServiceProviderApi,'/api/serviceprovider/register','/api/serviceprovider/update')
+api.add_resource(StatisticsApi,'/api/stats/<u_type>')
+
+
 #####################################################################################################################################3
 class Admin(db.Model,UserMixin):
     __tablename__='admin'
@@ -359,6 +453,7 @@ class Services(db.Model):
     packages=db.relationship("Package", backref="service")
     Sproviders=db.relationship("ServiceProvider",backref="service")
     
+    
 
       
 class Package(db.Model):
@@ -390,6 +485,7 @@ class Request(db.Model):
     r_status=db.Column(db.String)
     r_rating=db.Column(db.Integer)
     all_messages=db.relationship("Messages",backref="req")
+    
 
 class Messages(db.Model):
     __tablename__="messages"  
@@ -659,26 +755,24 @@ def cus_stats():
 def ad_stats():
     if request.method=="GET":
         cu=current_user 
-        req=db.session.query(Request).all()
         
-        f=[0,0,0]
+        response=requests.get("http://127.0.0.1:5000/api/stats/admin")
+        if response.status_code==200:
+            ser=db.session.query(Services).all()
+            return render_template("/admin/ad_stats.html",cu=cu,services=ser)   
+        else:
+            return "Something went wrong"
+    elif request.method=="POST":
+        cu=current_user 
+        sn=request.form.get("sname")
+        response=requests.post("http://127.0.0.1:5000/api/stats/admin",json={"sname":sn})
+        if response.status_code==200:
+            ser=db.session.query(Services).all()
+            return render_template("/admin/ad_stats.html",cu=cu,services=ser)   
+        else:
+            return "Something went wrong"
         
-        for r in req:
-            
-            if r.r_status=="Accepted":
-                f[0]+=1
-            elif r.r_status=="Requested":
-                f[1]+=1
-            elif r.r_status=="Closed":
-                f[2]+=1       
-        X=["Accepted","Rejected","Closed"]
-        plt.bar(X, f, color='r')
-        
-        plt.savefig("./static/ad/bar1.png")
-
-        return render_template("/admin/ad_stats.html",cu=cu)   
-        
-
+    
 @app.route("/serviceprovider/dashboard", methods=["GET","POST"])
 @login_required
 def SPDashboard():
@@ -724,11 +818,12 @@ def SPDashboard():
             rate=0
             for p in mypack:
                 rate+=p.p_rating
-            rating=rate/len(mypack)
+            rating = math.ceil(rate / len(mypack))
         else:
             rating=0   
         
         current_user.sp_rating=rating
+        print(current_user.sp_rating)
         db.session.commit()
         
         return render_template("/ServiceProvider/serviceprovider.html",cu=current_user,
@@ -738,7 +833,7 @@ def SPDashboard():
 def create_pack():
     if request.method=="GET":
         P=db.session.query(Package).filter_by(sp_id=current_user.sp_id).all()
-        return render_template("/ServiceProvider/create_package.html",mypackage=P)
+        return render_template("/ServiceProvider/create_package.html",mypackage=P,cu=current_user)
     elif request.method=="POST" and "edit" in request.args:
         pid=request.args.get("pid")
         pn=request.form.get("pname")
@@ -802,7 +897,14 @@ def stats():
 @app.route("/admin/dashboard/",methods=["GET","POST"]) 
 @login_required
 def dashboard():
-    if request.method=="GET":
+    
+    if request.method=="GET" and 'accept' in request.args :
+        spid=request.args.get("spid")
+        sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+        sp.sp_status="Active"
+        db.session.commit()
+        return redirect("/admin/dashboard/")
+    elif request.method=="GET":
         ser=db.session.query(Services).all()
         act_sp=db.session.query(ServiceProvider).filter_by(sp_status="Active").all()
         req_sp=db.session.query(ServiceProvider).filter_by(sp_status="Requested").all()
@@ -810,8 +912,7 @@ def dashboard():
         act_c=db.session.query(Customer).filter_by(c_status="Active").all()
         flag_c=db.session.query(Customer).filter_by(c_status="Flagged").all()
         print(ser)
-        return render_template("/admin/Admin_dashboard.html",Services=ser,active=act_sp,requested=req_sp,flagged=flag_sp,cu=current_user,
-                               c_active=act_c,c_flag=flag_c)
+        return render_template("/admin/Admin_dashboard.html",Services=ser,active=act_sp,requested=req_sp,flagged=flag_sp,cu=current_user,c_active=act_c,c_flag=flag_c)
     
 @app.route("/admin/search" , methods=["GET", "POST"])  
 @login_required
