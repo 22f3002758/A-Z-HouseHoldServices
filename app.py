@@ -15,20 +15,19 @@ import math
 
 app=Flask(__name__)# create constructor
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///api_database.sqlite3'
-app.config['SECRET_KEY']="mysecretkey"
-db = SQLAlchemy(app) # connect app with sqlalchemy
+app.config['SECRET_KEY']="mysecretkey" # secure sessions and cookie
+db=SQLAlchemy(app) # connect app database with sqlalchemy, it is ORM allows you to interact with the database using Python objects instead of raw SQL queries.
 api=Api(app)
+login_manager=LoginManager(app) #Flask-Login provides user session management, helping you handle login and logout functionality.
 
-login_manager=LoginManager(app)
-
-app.app_context().push()# push it in the server
-
-############################################################################################
+app.app_context().push() #This pushes the application context to the stack. 
+#The context is necessary to access current app-related objects, such as configuration and database, outside of request handling.
+#  It's often used during initialization scripts or in interactive Python sessions.
+################################################################################################
 services_field={
     "s_name":fields.String,
     "baseprice":fields.Integer
 }
-
 class ServiceApi(Resource):
     @marshal_with(services_field)
     def post(self):
@@ -60,6 +59,7 @@ class ServiceApi(Resource):
                 up_ser.baseprice=bp
             db.session.commit()
             return up_ser,200
+        
         else:
             return {"message": "Service not found."}, 400
 
@@ -179,6 +179,22 @@ class PackageApi(Resource):
         db.session.add(create_pack)
         db.session.commit()
         return {"message":"Package Created"}, 200
+
+class AdminApi(Resource):
+    def put(self):
+        adname=request.json.get("adname")
+        ademail=request.json.get("ademail")
+        adpwd=request.json.get("adpwd")
+        ad=db.session.query(Admin).first()
+        if adname:
+            ad.admin_name=adname
+        if ademail:
+            ad.admin_email=ademail
+        if adpwd:
+            ad.admin_password=adpwd
+        db.session.commit()  
+        return {"message" : "Profile Updated"}, 200 
+
      
 class CustomerApi(Resource):
     def put(self):
@@ -336,6 +352,75 @@ class StatisticsApi(Resource):
             plt.savefig('./static/ad/pie1.png', bbox_inches='tight')
             plt.clf()
 
+        elif u_type=='customer':
+            cid=request.json.get('cid')
+            req=db.session.query(Request).filter_by(c_id=cid).all()
+            f=[0,0,0]
+            
+            for req in req:
+                # d=req.r_date.split("-")
+                if req.r_status=="Accepted":
+                    f[0]+=1
+                elif req.r_status=="Rejected":
+                    f[1]+=1
+                elif req.r_status=="Closed":
+                    f[2]+=1       
+            X=["Accepted","Rejected","Closed"]
+        
+            colors = sns.color_palette("pastel", len(X))
+
+            fig, ax = plt.subplots(figsize=(8, 6))
+            sns.barplot(x=X, y=f, palette=colors, ax=ax)
+
+            for index, value in enumerate(f):
+                ax.text(index, value + 0.1, str(value), ha='center', va='bottom')
+
+            ax.set_xlabel("Status")
+            ax.set_ylabel("Count")
+            labels = [(label, colors[i]) for i, label in enumerate(X)]
+            if labels:
+                for i, (label, color) in enumerate(labels):
+                    fig.text(0.5 + (i - len(labels) / 2) * 0.15, +0, label,
+                            ha='center', va='center', fontsize=10, style='italic',
+                            bbox=dict(facecolor=color, edgecolor='none'))
+            plt.savefig("./static/cus/bar1.png", bbox_inches='tight')
+            plt.clf()
+
+        elif u_type=='serviceprovider':
+            spid=request.json.get('spid')
+            req=db.session.query(Request).filter_by(sp_id=spid).all()
+            f=[0,0,0]
+            
+        
+            for r in req:
+                # d=req.r_date.split("-")
+                if r.r_status=="Accepted":
+                    f[0]+=1
+                elif r.r_status=="Rejected":
+                    f[1]+=1
+                elif r.r_status=="Closed":
+                    f[2]+=1       
+            X=["Accepted","Rejected","Closed"]
+        
+            colors = sns.color_palette("pastel", len(X))
+
+            fig, ax = plt.subplots(figsize=(8, 6))
+            sns.barplot(x=X, y=f, palette=colors, ax=ax)
+
+            for index, value in enumerate(f):
+                ax.text(index, value + 0.0, str(value), ha='center', va='bottom')
+
+            ax.set_xlabel("Status")
+            ax.set_ylabel("Count")
+            labels = [(label, colors[i]) for i, label in enumerate(X)]
+            if labels:
+                for i, (label, color) in enumerate(labels):
+                    fig.text(0.5 + (i - len(labels) / 2) * 0.15, +0, label,
+                            ha='center', va='center', fontsize=10, style='italic',
+                            bbox=dict(facecolor=color, edgecolor='none'))
+            plt.savefig("./static/sp/bar1.png", bbox_inches='tight')
+            plt.clf()
+
     def post(self,u_type):
         if u_type=='admin':
             sn=request.json.get('sname')
@@ -371,22 +456,16 @@ class StatisticsApi(Resource):
             plt.savefig("./static/ad/bar1.png", bbox_inches='tight')
             plt.clf()
 
-
-
-
-    
-
-                            
 api.add_resource(ServiceApi, '/api/service/create','/api/service/update')
 api.add_resource(BookApi,'/api/book','/api/book/edit')
 api.add_resource(FlagApi,'/api/flag')
 api.add_resource(PackageApi,'/api/package/create','/api/package')
+api.add_resource(AdminApi,'/api/admin/update')
 api.add_resource(CustomerApi,'/api/customer/register','/api/customer/update')
 api.add_resource(ServiceProviderApi,'/api/serviceprovider/register','/api/serviceprovider/update')
 api.add_resource(StatisticsApi,'/api/stats/<u_type>')
 
-
-#####################################################################################################################################3
+###############################################################################################
 class Admin(db.Model,UserMixin):
     __tablename__='admin'
 
@@ -481,31 +560,37 @@ class Request(db.Model):
     r_time=db.Column(db.String)
     r_address=db.Column(db.String)
     r_city=db.Column(db.String)
-    r_message=db.Column(db.String)
+    # r_message=db.Column(db.String)
     r_status=db.Column(db.String)
     r_rating=db.Column(db.Integer)
-    all_messages=db.relationship("Messages",backref="req")
+    # all_messages=db.relationship("Messages",backref="req")
     
 
-class Messages(db.Model):
-    __tablename__="messages"  
+# class Messages(db.Model):
+#     __tablename__="messages"  
 
-    m_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
-    r_id=db.Column(db.Integer, db.ForeignKey("request.r_id"),nullable=False)
-    m_content=db.Column(db.String)
-    m_sender=db.Column(db.String)
+#     m_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
+#     r_id=db.Column(db.Integer, db.ForeignKey("request.r_id"),nullable=False)
+#     m_content=db.Column(db.String)
+#     m_sender=db.Column(db.String)
 
-########################################################################################################################
-
+##########################################################################################
+@login_manager.user_loader
+def load_user(user_id):
+    utype,id=user_id.split("-")
+    if utype=="c":
+        return db.session.query(Customer).filter_by(c_id=id).first()
+    elif utype=='sp':
+        return db.session.query(ServiceProvider).filter_by(sp_id=id).first()
+    else:
+        return db.session.query(Admin).filter_by(admin_id=id).first()
 
 
 @app.route("/", methods=["GET","POST"])
 def home():
-        
     return render_template("home.html")
 
 @app.route ("/register", methods=["GET","POST"])
-
 def register():
     if request.method=="GET" and request.args["utype"]=="customer":
         return render_template("/customer/register_customer.html")
@@ -537,7 +622,6 @@ def register():
         sername=request.form.get("sp_service")
         spphone=request.form.get("sp_phone")
         sresume=request.files["resume"]
-        print("i am here")
         response=requests.post("http://127.0.0.1:5000/api/serviceprovider/register",data={"spname":spname,'spaddress': spaddress,'spcity':spcity,'spemail':spemail,"sppwd":sppwd,"spexp":spexp,"sername":sername,"spphone":spphone},files={"sresume": (sresume.filename, sresume, sresume.content_type)})
         if response.status_code==200:
             return redirect("/login")
@@ -564,7 +648,7 @@ def update():
             return redirect("/customer/Dashboard")
         else:
             return "something went wrong"
-    if request.method=="POST" and request.args.get("utype")=="serviceprovider":  
+    elif request.method=="POST" and request.args.get("utype")=="serviceprovider":  
         spid=current_user.sp_id
         spname=request.form.get("sp_name")
         spaddress=request.form.get("sp_address")
@@ -579,21 +663,18 @@ def update():
             return redirect("/serviceprovider/dashboard")
         else:
             return "something went wrong"  
-    
-
-
-@login_manager.user_loader
-def load_user(user_id):
-        utype,id=user_id.split("-")
-        if utype=="c":
-            return db.session.query(Customer).filter_by(c_id=id).first()
-        elif utype=='sp':
-            return db.session.query(ServiceProvider).filter_by(sp_id=id).first()
+    elif request.method=="POST" and request.args.get("utype")=="admin":
+        cu=current_user
+        adname=request.form.get("adname")
+        ademail=request.form.get("ademail")
+        adpwd=request.form.get("adpwd")
+        response=requests.put("http://127.0.0.1:5000/api/admin/update",json={"adname":adname,'ademail': ademail,'adpwd':adpwd})
+        if response.status_code==200:
+            flash(response.json()["message"])
+            return redirect("/admin/dashboard")
         else:
-            return db.session.query(Admin).filter_by(admin_id=id).first()
+            return "something went wrong"  
 
-
-  
 
 
 @app.route("/login",methods=["GET","POST"])
@@ -617,6 +698,7 @@ def login():
             return redirect("/admin/dashboard")
         else:
             return render_template("notexist.html")
+
 
 @app.route("/customer/Dashboard",methods=["GET","POST"])
 @login_required
@@ -644,7 +726,7 @@ def book():
             return redirect("/customer/Dashboard")
         else:
             return "something went wrong"
-        return redirect("/customer/Dashboard")
+        
     elif request.method=="POST" and "cancel" in request.args:
         rid=request.args.get("rid")
         response=requests.put("http://127.0.0.1:5000/api/book/edit",json={"rid":rid,'r_status':"Cancelled"})
@@ -653,7 +735,7 @@ def book():
             return redirect("/customer/Dashboard")
         else:
             return "something went wrong"
-        return redirect("/customer/Dashboard")
+        
     elif request.method=="POST" and "close" in request.args:
         rid=request.args.get("rid")
         response=requests.put("http://127.0.0.1:5000/api/book/edit",json={"rid":rid,'r_status':"Closed"})
@@ -662,9 +744,7 @@ def book():
             return redirect("/customer/Dashboard")
         else:
             return "something went wrong"
-
         
-        return redirect("/customer/Dashboard")
     elif request.method == "POST":
         spid=request.args.get("spid")
         pid=request.args.get("pid")
@@ -681,6 +761,7 @@ def book():
             return redirect("/customer/Dashboard")
         else:
             return "something went wrong"
+        
     
 @app.route("/rating",methods=["GET","POST"])
 def rating():
@@ -700,13 +781,10 @@ def rating():
 
 @app.route("/customer/search",methods=["GET","POST"])
 def search():
-        
     if request.method=="GET" and "sname" in request.args:
-        
         s=request.args.get("sname")
         ser=db.session.query(Services).filter_by(s_name=s).first()
         pack = db.session.query(Package).filter_by(s_id=ser.s_id).order_by(Package.p_rating.desc()).all()
-
         Servis=db.session.query(Services).all()
         return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user,show='post')
     
@@ -714,7 +792,6 @@ def search():
         Servis=db.session.query(Services).all()
         return render_template("/Customer/custsearch.html",Services=Servis,cu=current_user)
     
-   
     elif request.method=="POST":    
         ser=request.form.get("service")
         citi=request.form.get("city")
@@ -727,60 +804,24 @@ def search():
         return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user,show='post')
         
 
+
 @app.route("/customer/stats",methods=["GET","POST"])  
 def cus_stats():
     if request.method=="GET":
-        cu=current_user 
-        
-        f=[0,0,0]
-        c_req=current_user.Sent_Request
-        for req in c_req:
-            d=req.r_date.split("-")
-            if req.r_status=="Accepted":
-                f[0]+=1
-            elif req.r_status=="Rejected":
-                f[1]+=1
-            elif req.r_status=="Closed":
-                f[2]+=1       
-        X=["Accepted","Rejected","Closed"]
-        plt.bar(X, f, color='r')
-        
-        plt.savefig("./static/cus/bar1.png")
-        plt.clf
-
-        return render_template("/customer/cus_stats.html",cu=cu)
+        cid=current_user.c_id
+        response=requests.get('http://127.0.0.1:5000/api/stats/customer',json={'cid':cid})
+        if response.status_code==200:
+            return render_template("/customer/cus_stats.html",cu=current_user)
+        else:
+            return "Something went wrong"
     
-
-@app.route("/admin/stats",methods=["GET","POST"])  
-def ad_stats():
-    if request.method=="GET":
-        cu=current_user 
-        
-        response=requests.get("http://127.0.0.1:5000/api/stats/admin")
-        if response.status_code==200:
-            ser=db.session.query(Services).all()
-            return render_template("/admin/ad_stats.html",cu=cu,services=ser)   
-        else:
-            return "Something went wrong"
-    elif request.method=="POST":
-        cu=current_user 
-        sn=request.form.get("sname")
-        response=requests.post("http://127.0.0.1:5000/api/stats/admin",json={"sname":sn})
-        if response.status_code==200:
-            ser=db.session.query(Services).all()
-            return render_template("/admin/ad_stats.html",cu=cu,services=ser)   
-        else:
-            return "Something went wrong"
         
     
 @app.route("/serviceprovider/dashboard", methods=["GET","POST"])
 @login_required
 def SPDashboard():
-    
     if request.method=="GET" and "accept" in request.args:
-        
         rid=request.args.get("rid")
-        
         response=requests.put("http://127.0.0.1:5000/api/book/edit",json={"rid":rid,'r_status': 'Accepted'})
         if response.status_code==200:
             return redirect("/serviceprovider/dashboard")
@@ -804,13 +845,10 @@ def SPDashboard():
             return "something went wrong"
         
     elif request.method=="GET":
-
         d=datetime.date.today()
         cd = d.strftime("%d-%m-%Y")
         r=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_date=cd,r_status="Accepted").all()
         Opser = db.session.query(Request).filter_by(sp_id=current_user.sp_id).filter(Request.r_status.in_(["Accepted", "Finished"])).all()
-
-        # Opser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Accepted").all()
         reqser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Requested").all()
         closeser=db.session.query(Request).filter(Request.sp_id==current_user.sp_id,Request.r_status.in_(["Closed", "Cancelled"])).all()
         mypack=current_user.mypackages
@@ -821,13 +859,12 @@ def SPDashboard():
             rating = math.ceil(rate / len(mypack))
         else:
             rating=0   
-        
         current_user.sp_rating=rating
-        print(current_user.sp_rating)
         db.session.commit()
-        
         return render_template("/ServiceProvider/serviceprovider.html",cu=current_user,
                                rating=int(current_user.sp_rating),todays_requests=r,open_services=Opser,requested_services=reqser,closed_services=closeser)
+
+
 
 @app.route("/serviceprovider/create",methods=["GET","POST"])
 def create_pack():
@@ -839,15 +876,6 @@ def create_pack():
         pn=request.form.get("pname")
         pd=request.form.get("pdesc")
         pp=request.form.get("pprice")
-        # edit_pack=db.session.query(Package).filter_by(p_id=pid).first()
-        # if pn:
-        #     edit_pack.p_name=pn
-        # if pd:
-        #     edit_pack.p_description=pd
-        # if pp:
-        #     edit_pack.p_price=pp
-        # db.session.commit()
-        #return redirect("/serviceprovider/create")
         response=requests.put("http://127.0.0.1:5000/api/package",json={"pid":pid,'pn': pn,'pd':pd,'pp':pp})
         if response.status_code==200:
             flash(response.json()["message"])
@@ -856,44 +884,30 @@ def create_pack():
             return "something went wrong"
         
     elif request.method=="POST" and "create" in request.args:
-        
         pn=request.form.get("pname")
         pd=request.form.get("pdesc")
         pp=request.form.get("pprice")
-        # create_pack=Package(p_price=pp,p_name=pn,p_description=pd,sp_id=current_user.sp_id,s_id=current_user.service.s_id,p_rating=0)
-        # db.session.add(create_pack)
-        # db.session.commit()
-        # return redirect("/serviceprovider/create")
         response=requests.post("http://127.0.0.1:5000/api/package/create",json={'pn': pn,'pd':pd,'pp':pp,'spid':current_user.sp_id,'sid':current_user.service.s_id})
         if response.status_code==200:
             flash(response.json()["message"])
             return redirect("/serviceprovider/dashboard")
         else:
             return "something went wrong"
+        
 
     
 @app.route("/serviceprovider/stats",methods=["GET","POST"])  
 def stats():
     if request.method=="GET":
-        cu=current_user 
-        f=[0,0,0]
-        sp_req=current_user.receive_request
-        for req in sp_req:
-            d=req.r_date.split("-")
-            if req.r_status=="Accepted":
-                f[0]+=1
-            elif req.r_status=="Rejected":
-                f[1]+=1
-            elif req.r_status=="Closed":
-                f[2]+=1       
-        X=["Accepted","Rejected","Closed"]
-        # plot bars in stack manner
-        plt.bar(X, f, color='r')
-        
-        plt.savefig("./static/sp/bar1.png")
+        spid=current_user.sp_id
+        response=requests.get('http://127.0.0.1:5000/api/stats/serviceprovider',json={'spid':spid})
+        if response.status_code==200:
+            return render_template("/ServiceProvider/sp_stats.html",cu=current_user)
+        else:
+            return "Something went wrong"
 
-        return render_template("/ServiceProvider/sp_stats.html",cu=cu)
-             
+    
+        
 @app.route("/admin/dashboard/",methods=["GET","POST"]) 
 @login_required
 def dashboard():
@@ -911,9 +925,9 @@ def dashboard():
         flag_sp=db.session.query(ServiceProvider).filter_by(sp_status="Flagged").all()
         act_c=db.session.query(Customer).filter_by(c_status="Active").all()
         flag_c=db.session.query(Customer).filter_by(c_status="Flagged").all()
-        print(ser)
         return render_template("/admin/Admin_dashboard.html",Services=ser,active=act_sp,requested=req_sp,flagged=flag_sp,cu=current_user,c_active=act_c,c_flag=flag_c)
     
+
 @app.route("/admin/search" , methods=["GET", "POST"])  
 @login_required
 def ad_search():
@@ -925,12 +939,10 @@ def ad_search():
             name=request.form.get("name")
             searchname=f'%{name}%'
             result=db.session.query(Customer).filter(Customer.c_name.ilike(searchname)).all()
-            
         else:
             name=request.form.get("name")    
             searchname=f'%{name}%'
             result=db.session.query(ServiceProvider).filter(ServiceProvider.sp_name.ilike(searchname)).all()
-        
         return render_template("/admin/adminsearch.html",cu=current_user,results=result,show='POST',utype=utype)
     
 
@@ -954,7 +966,6 @@ def flag():
         else:
             return "something went wrong"
 
-    
     elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="flag":
         cid=request.args.get("cid")
         response=requests.put("http://127.0.0.1:5000/api/flag",json={"cid":cid,'c_status': 'Flagged'})
@@ -971,46 +982,36 @@ def flag():
             return redirect("/admin/dashboard")
         else:
             return "something went wrong"
+        
 
-# @app.route("/warning", methods=["GET","POST"])
-# def warning():
-#     if request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="Active":
-#         spid=request.args.get("spid")
-#         msg=request.form.get("msg")
-#         sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
-#         sp.sp_warn+=1
-#         sp.sp_warn_msg=msg
-#         db.session.commit()
-#         return redirect("/admin/dashboard") 
-#     elif request.method=="POST" and request.args["target"]=="c" and request.args["action"]=="Active":
-#         cid=request.args.get("cid")
-#         msg=request.form.get("msg")
-#         c=db.session.query(Customer).filter_by(c_id=cid).first()
-#         c.c_warn+=1
-#         c.sp_warn_msg=msg
-#         db.session.commit()
-#         return redirect("/admin/dashboard")  
-    
-          
-# @app.route("/messages",methods=["GET","POST"])
-# def messages():  
-#     if request.method=='POST' and          
-
-
+@app.route("/admin/stats",methods=["GET","POST"])  
+def ad_stats():
+    if request.method=="GET":
+        cu=current_user 
+        response=requests.get("http://127.0.0.1:5000/api/stats/admin")
+        if response.status_code==200:
+            ser=db.session.query(Services).all()
+            return render_template("/admin/ad_stats.html",cu=cu,services=ser)   
+        else:
+            return "Something went wrong"
+    elif request.method=="POST":
+        cu=current_user 
+        sn=request.form.get("sname")
+        response=requests.post("http://127.0.0.1:5000/api/stats/admin",json={"sname":sn})
+        if response.status_code==200:
+            ser=db.session.query(Services).all()
+            return render_template("/admin/ad_stats.html",cu=cu,services=ser)   
+        else:
+            return "Something went wrong"
 
     
 @app.route("/service" , methods=["GET","POST"])
 @login_required
 def service():
-    print("hello")
     if request.method=="POST" and "ns" in request.args:
         sn=request.form.get("servicename")
-        # sd=request.form.get("desc")
         bp=request.form.get("baseprice")
         response=requests.post("http://127.0.0.1:5000/api/service/create",json={"sn":sn,"bp":bp})
-        # add_ser=Services(s_name=sn,baseprice=bp)
-        # db.session.add(add_ser)
-        # db.session.commit()
         if response.status_code==201:
             return redirect("/admin/dashboard/")
         else:

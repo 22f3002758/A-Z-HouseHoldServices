@@ -40,9 +40,10 @@
           <!-- Top Navbar -->
           <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
             <div class="dropdown ms-auto me-4">
-              <a href="#" class="d-flex align-items-center text-decoration-none" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-person-circle fs-3"></i>
-              </a>
+              <a href="#" class="d-flex align-items-center text-decoration-none bg-primary text-white rounded-circle justify-content-center " style="width: 40px; height: 40px; font-size: 1.5rem; font-weight: bold;"
+              id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+              {{cu.admin_name[:1]}}
+           </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="#profile" data-bs-toggle="modal">Profile</a></li>
                 <li><a class="dropdown-item" href="/logout">Logout</a></li>
@@ -60,24 +61,24 @@
                   <div class="card p-4 mt-5" style="width: 40rem;">
                       
                       <h1 class="h3 mb-3 fw-normal text-center">Edit your profile</h1>
-                      <form action="/profile-update?utype=customer" method="POST">
+                      <form action="/profile-update?utype=admin" method="POST">
                           <div class="row g-2 mb-3">
                               <div class="col">
                                   <div class="form-floating">
-                                      <input type="text" class="form-control"  name="cname" placeholder="{{ cu.c_name }}">
+                                      <input type="text" class="form-control"  name="adname" placeholder="{{ cu.a_name }}">
                                       <label for="floatingName">Name</label>
                                   </div>
                               </div>
                               <div class="col">
                                   <div class="form-floating">
-                                      <input type="email" class="form-control" id="floatingEmail" name="cemail" placeholder="{{cu.c_email}}">
+                                      <input type="email" class="form-control" id="floatingEmail" name="ademail" placeholder="{{cu.ad_email}}">
                                       <label for="floatingEmail">Email</label>
                                   </div>
                               </div>
                           </div>
                                                     
                           <div class="form-floating mb-3">
-                              <input type="password" class="form-control" id="floatingPassword" name="cpwd" placeholder="Password">
+                              <input type="password" class="form-control" id="floatingPassword" name="adpwd" placeholder="Password">
                               <label for="floatingPassword">Password</label>
                           </div>
                           <button class="w-100 btn btn-lg btn-primary" type="submit">Update</button>
