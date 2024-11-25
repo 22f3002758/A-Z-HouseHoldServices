@@ -29,6 +29,7 @@
 <div class="card mb-3 shadow-lg mt-4">
 
   <div class="card-body">
+    {% if package %}
     <div class="row row-cols-1 row-cols-2 row-cols-3 row-cols-4 g-4">
     {% for p in package %}
     <div class="col mb-4">
@@ -141,7 +142,10 @@
       </div>
     </div>    
       {% endfor %}
-    </div>  
+    </div> 
+    {% else %}
+      <p> No Services Found</p> 
+      {% endif %}    
   </div>
 </div>
 {% endif %}

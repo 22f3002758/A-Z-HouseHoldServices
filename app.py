@@ -24,29 +24,24 @@ app.app_context().push() #This pushes the application context to the stack.
 #The context is necessary to access current app-related objects, such as configuration and database, outside of request handling.
 #  It's often used during initialization scripts or in interactive Python sessions.
 ################################################################################################
-services_field={
-    "s_name":fields.String,
-    "baseprice":fields.Integer
-}
+
 class ServiceApi(Resource):
-    @marshal_with(services_field)
+    
     def post(self):
         sn=request.json.get("sn")
         bp=request.json.get("bp")
         
         
         servicename=db.session.query(Services).filter_by(s_name=sn).first()
-        print("hi")
         if servicename:
-            return {"message": "Service already exists"}, 400
+            return {"message": "Service already exists"}, 409
         else:
             add_ser=Services(s_name=sn,baseprice=bp)
             db.session.add(add_ser)
             db.session.commit()
-            print("commited")
-            return (add_ser,201)
+            return {"message": "Service Created."}, 201
         
-    @marshal_with(services_field)
+    
     def put(self):
         sn=request.json.get("sn")
         bp=request.json.get("bp")
@@ -58,14 +53,23 @@ class ServiceApi(Resource):
             if bp:    
                 up_ser.baseprice=bp
             db.session.commit()
-            return up_ser,200
+            return {"message": "Service Updated."},200
         
         else:
-            return {"message": "Service not found."}, 400
+            return {"message": "Service not found."}, 204
 
-#booking_field={}
+    def delete(self):
+        sid=request.json.get("s_id")   
+        servicename=db.session.query(Services).filter_by(s_id=sid).first()
+        if servicename:
+            db.session.delete(servicename)
+            db.session.commit()
+            return {"message": "Service Deleted"}, 200
+        else:
+            return {"message": "Service does not exist"},204
+    
+
 class BookApi(Resource):
-    #@marshal_with(booking_field)
     def post(self):
         spid=request.json.get("spid")
         pid=request.json.get("pid")
@@ -74,9 +78,8 @@ class BookApi(Resource):
         rtime = request.json.get("rtime")
         raddress = request.json.get("raddress")
         rcity = request.json.get("rcity")
-        rmsg = request.json.get("rmsg")
         rstatus = request.json.get('rstatus')
-        R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_message=rmsg,r_status=rstatus,r_rating=0)
+        R= Request(sp_id=spid,p_id=pid,c_id=cid,r_date=rdate, r_time=rtime,r_address=raddress,r_city=rcity,r_status=rstatus,r_rating=0)
         db.session.add(R)
         db.session.commit()
         return {"message":"Booking request created"}, 200
@@ -86,11 +89,9 @@ class BookApi(Resource):
             rid=request.json.get("rid")
             edate=request.json.get("edate")
             etime=request.json.get("etime")
-            emsg=request.json.get("emsg")
             edit_req=db.session.query(Request).filter_by(r_id=rid).first()
             edit_req.r_date=edate
             edit_req.r_time=etime
-            edit_req.r_message=emsg
             db.session.commit()
             return {'message': "Booking updated"}, 200
         elif request.json.get('r_status')=='Closed':
@@ -154,7 +155,6 @@ class FlagApi(Resource):
 class PackageApi(Resource):
     def put(self):
         pid=request.json.get('pid')
-        print("id is:",pid)
         pn=request.json.get('pn')
         pd=request.json.get('pd')
         pp=request.json.get('pp')
@@ -233,7 +233,7 @@ class CustomerApi(Resource):
         if c:
             return {"message" : "User already Exist"}, 409
         else:
-            cust=Customer(c_name=cname,c_address=caddress, c_city=ccity,c_email=cemail,c_password=cpwd,c_phone=cphone,c_warn=0,c_status='Active')
+            cust=Customer(c_name=cname,c_address=caddress, c_city=ccity,c_email=cemail,c_password=cpwd,c_phone=cphone,c_status='Active')
             db.session.add(cust)
             db.session.commit() 
             return {"message" : "Profile Created"}, 200
@@ -241,9 +241,7 @@ class CustomerApi(Resource):
     
 class ServiceProviderApi(Resource):
     def post(self):
-        print(f"Content-Type: {request.content_type}")
         spname=request.form.get("spname")
-        print(spname)
         spaddress=request.form.get("spaddress")
         spcity=request.form.get("spcity")
         spemail=request.form.get("spemail")
@@ -252,7 +250,6 @@ class ServiceProviderApi(Resource):
         sername=request.form.get("sername")
         spphone=request.form.get("spphone")
         sresume=request.files.get("sresume")
-        print("in api")
         sp=db.session.query(ServiceProvider).filter_by(sp_email=spemail).first()
         if sp:
             return {"message" : "User already Exist"}, 409
@@ -261,7 +258,7 @@ class ServiceProviderApi(Resource):
             image=pdf.load_page(0).get_pixmap()
             image.save(f'./static/sp/Resume/{spemail}.png')
             sp=ServiceProvider(sp_name=spname,sp_address=spaddress, sp_city=spcity,sp_email=spemail,
-                                sp_password=sppwd,sp_phone=spphone,sp_exp=spexp,sp_warn=0,sp_status="Requested",
+                                sp_password=sppwd,sp_phone=spphone,sp_exp=spexp,sp_status="Requested",
                                 sp_rating=0,sp_rfile=f'/static/sp/Resume/{spemail}.png',sp_servicename=sername)
             db.session.add(sp)
             db.session.commit() 
@@ -456,7 +453,7 @@ class StatisticsApi(Resource):
             plt.savefig("./static/ad/bar1.png", bbox_inches='tight')
             plt.clf()
 
-api.add_resource(ServiceApi, '/api/service/create','/api/service/update')
+api.add_resource(ServiceApi, '/api/service/create','/api/service/update','/api/service/delete')
 api.add_resource(BookApi,'/api/book','/api/book/edit')
 api.add_resource(FlagApi,'/api/flag')
 api.add_resource(PackageApi,'/api/package/create','/api/package')
@@ -491,11 +488,9 @@ class ServiceProvider(db.Model,UserMixin):
     sp_rating=db.Column(db.Integer)
     sp_status=db.Column(db.String)
     sp_rfile=db.Column(db.String)
-    sp_warn=db.Column(db.Integer)
-    sp_warn_msg=db.Column(db.String)
     sp_servicename=db.Column(db.String,db.ForeignKey("services.s_name"))
-    mypackages=db.relationship("Package", backref="servprovider")
-    receive_request=db.relationship("Request",backref="servprovider")
+    mypackages=db.relationship("Package", backref="servprovider",cascade="all, delete-orphan")
+    receive_request=db.relationship("Request",backref="servprovider",cascade="all, delete-orphan")
     
 
     # sp_camp_child=db.relationship('Campaign')
@@ -516,8 +511,6 @@ class Customer(db.Model,UserMixin):
     c_password=db.Column(db.String)
     c_phone=db.Column(db.String) 
     c_status=db.Column(db.String)
-    c_warn=db.Column(db.Integer)
-    c_warn_msg=db.Column(db.String)
     Sent_Request=db.relationship("Request",backref="cust")
     
     def get_id(self):
@@ -530,8 +523,9 @@ class Services(db.Model):
     s_name=db.Column(db.String,unique=True)
     baseprice=db.Column(db.Integer)
     packages=db.relationship("Package", backref="service")
-    Sproviders=db.relationship("ServiceProvider",backref="service")
-    
+    Sproviders=db.relationship("ServiceProvider",backref="service", cascade="all, delete-orphan")
+
+
     
 
       
@@ -539,7 +533,7 @@ class Package(db.Model):
     __tablename__="package"
 
     p_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
-    p_name=db.Column(db.String,unique=True)
+    p_name=db.Column(db.String)
     p_price=db.Column(db.Integer)
     p_description=db.Column(db.String)
     p_rating=db.Column(db.Integer)
@@ -552,7 +546,6 @@ class Request(db.Model):
     __tablename__="request"
 
     r_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
-    # s_id=db.Column(db.Integer, ForeignKey(services.s_id),nullable=False)
     sp_id=db.Column(db.Integer, db.ForeignKey("serviceprovider.sp_id"),nullable=False)
     c_id=db.Column(db.Integer, db.ForeignKey("customer.c_id"),nullable=False)
     p_id=db.Column(db.Integer, db.ForeignKey("package.p_id"),nullable=False)
@@ -560,19 +553,9 @@ class Request(db.Model):
     r_time=db.Column(db.String)
     r_address=db.Column(db.String)
     r_city=db.Column(db.String)
-    # r_message=db.Column(db.String)
     r_status=db.Column(db.String)
     r_rating=db.Column(db.Integer)
-    # all_messages=db.relationship("Messages",backref="req")
-    
-
-# class Messages(db.Model):
-#     __tablename__="messages"  
-
-#     m_id=db.Column(db.Integer, primary_key=True, autoincrement= True)
-#     r_id=db.Column(db.Integer, db.ForeignKey("request.r_id"),nullable=False)
-#     m_content=db.Column(db.String)
-#     m_sender=db.Column(db.String)
+   
 
 ##########################################################################################
 @login_manager.user_loader
@@ -626,7 +609,6 @@ def register():
         if response.status_code==200:
             return redirect("/login")
         else:
-            print(response.status_code)
             flash(response.data()['message'])
             return redirect("/register?utype=serviceprovider")
 
@@ -642,7 +624,7 @@ def update():
         ca=request.form.get("cadd")
         cpwd=request.form.get("cpwd")
         
-        response=requests.put("http://127.0.0.1:5000/api/customer/update",json={"cn":cn,'ce': ce,'cc':cc,'cp':ca,'cpwd':cpwd,'cid':current_user.c_id})
+        response=requests.put("http://127.0.0.1:5000/api/customer/update",json={"cp":cp,"cn":cn,'ce': ce,'cc':cc,'cp':ca,'cpwd':cpwd,'cid':cu.c_id})
         if response.status_code==200:
             flash(response.json()["message"])
             return redirect("/customer/Dashboard")
@@ -719,8 +701,7 @@ def book():
         rid=request.args.get("rid")
         edate=request.form.get("Date")
         etime=request.form.get("Time")
-        emsg=request.form.get("msg")
-        response=requests.put("http://127.0.0.1:5000/api/book/edit?change=edit",json={"rid":rid,"edate":edate,"etime":etime,"emsg":emsg})
+        response=requests.put("http://127.0.0.1:5000/api/book/edit?change=edit",json={"rid":rid,"edate":edate,"etime":etime})
         if response.status_code==200:
             flash(response.json()["message"])
             return redirect("/customer/Dashboard")
@@ -753,9 +734,8 @@ def book():
         rtime = request.form.get("Time")
         raddress = request.form.get("c_add")
         rcity = request.form.get("c_city")
-        rmsg = request.form.get("msg")
         rstatus = "Requested"
-        response=requests.post("http://127.0.0.1:5000/api/book",json={"spid":spid,"pid":pid,"cid":cid,"rdate":rdate,"rtime":rtime,"rcity":rcity,"rmsg":rmsg,"rstatus":rstatus})
+        response=requests.post("http://127.0.0.1:5000/api/book",json={"spid":spid,"pid":pid,"cid":cid,"rdate":rdate,"rtime":rtime,"rcity":rcity,"rstatus":rstatus})
         if response.status_code==200:
             flash(response.json()["message"])
             return redirect("/customer/Dashboard")
@@ -800,7 +780,8 @@ def search():
         pack=[]
         for sp in Servisprovider:
             for p in sp.mypackages:
-                pack.append(p)        
+                pack.append(p)   
+                     
         return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user,show='post')
         
 
@@ -1008,7 +989,7 @@ def ad_stats():
 @app.route("/service" , methods=["GET","POST"])
 @login_required
 def service():
-    if request.method=="POST" and "ns" in request.args:
+    if request.method=="POST" and request.args['target']=='ns':
         sn=request.form.get("servicename")
         bp=request.form.get("baseprice")
         response=requests.post("http://127.0.0.1:5000/api/service/create",json={"sn":sn,"bp":bp})
@@ -1017,7 +998,7 @@ def service():
         else:
             flash("service already exist")
             return redirect("/admin/dashboard/")
-    elif request.method=="POST" and "edit" in request.args:
+    elif request.method=="POST" and request.args['target']=='edit':
         sid=request.args.get("sid")
         sn=request.form.get("servicename")
         bp=request.form.get("baseprice")
@@ -1028,6 +1009,17 @@ def service():
         else:
             flash("Error in update. Try again")
             return redirect("/admin/dashboard/")
+    elif request.method=="POST" and request.args['target']=='delete':
+        sid=request.args.get("sid")
+        response=requests.delete("http://127.0.0.1:5000/api/service/delete",json={"s_id":sid})
+        if response.status_code==200:
+            flash("service deleted")
+            return redirect("/admin/dashboard/")
+        else:
+            flash("Error in deletion. Try again")
+            return redirect("/admin/dashboard/")
+
+    
 
 
 @app.route('/logout')
