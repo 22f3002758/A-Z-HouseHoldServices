@@ -39,26 +39,22 @@
 <!-- Service History Table -->
 <h4 class="mt-4">Your Bookings</h4>
 <div class="card shadow-lg">
-  
   <div class="card-body">
       <table class="table">
           <thead>
               <tr>
                   <th>Service Name</th>
                   <th>Provider Name</th>
-                  
                   <th>Payment</th>
                   <th>Date</th>
                   <th>Time</th>
                   <th>Phone</th>
                   <th>Status</th>
-                  
                   <th>Actions</th>
-
               </tr>
           </thead>
           <tbody>
-            {% for request in requests %}
+            {% for request in req_opn %}
 
               <tr>
                   <td>{{request.pack.p_name}}</td>
@@ -68,68 +64,14 @@
                   <td>{{request.r_date}}</td>
                   <td>{{request.r_time}}</td>
                   <td>{{request.servprovider.sp_phone}}</td>
-                  <td><span class="badge bg-info text-dark">{{request.r_status}}</span></td>
+                  {% if request.r_status=="Accepted" %}
+                  <td><span class="badge bg-success text-white">{{request.r_status}}</span></td>
+                  {% elif request.r_status=="Finished" %}
+                  <td><span class="badge bg-danger text-white">{{request.r_status}}</span></td>
+                  {% endif %}
                   <td class="action-btns">
-                      {% if request.r_status=="Requested" %} 
-                      <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        
-                          <i class="bi bi-trash"></i>
-                      </button>
-                      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Cancel Request</Strong></h1>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body" >
-                                <p>Are you sure you want to cancel the Request?</p>
-                            </div>
-                              <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                                <form action="/customer/book?cancel=Yes&rid={{request.r_id}}" method="POST">
-                                <button type="submit" class="btn btn-primary">Yes</button>
-                                </form>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#exampleModal2" >
-                          <i class="bi bi-pen"></i>
-                      </button>
-                      <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Edit Request</Strong></h1>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body" >
-                              <h5>{{request.pack.p_name}}</h5>
-                              <div class="form-floating mb-3">
-                                  <div class="container">
-                                    <form action="/customer/book?rid={{request.r_id}}&edit=yes" method="POST">
-                                      <div class="row mb-3">
-                                        <div class="col-md-4">
-                                          <label class="form-label" for="Date">date</label>
-                                          <input type="date" class="form-control" required name="Date">
-                                        </div>
-                                        
-                                        <div class="col-md-4">
-                                          <label class="form-label" for="Time">Time : </label>
-                                          <input type="time" class="form-control" required name="Time">
-                                        </div>
-                                      </div>
-                                                                                                                                            
-                                      <button type="submit">Submit</button>
-                  
-                                    </form>
-                            </div>
-                            
-                          </div>
-                        </div>
-                      </div>
-                      {% elif request.r_status=="Finished" %}
+                      
+                      {% if request.r_status=="Finished" %}
                         <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#Finish">
                           Close
                         </button>
@@ -174,6 +116,135 @@
               
           </tbody>
       </table>
+  </div>
+</div>
+<div class="card mt-3 shadow-lg">
+  <div class="card-header">
+    Requested Bookings
+  </div>
+  <div class = "card-body">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Service Name</th>
+          <th>Provider Name</th>
+          <th>Payment</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Phone</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for request in req_req %}
+            <tr>
+              <td>{{request.pack.p_name}}</td>
+              <td>{{request.servprovider.sp_name}}</td>
+              
+              <td>{{request.pack.p_price}}</td>
+              <td>{{request.r_date}}</td> 
+              <td>{{request.r_time}}</td>
+              <td>{{request.servprovider.sp_phone}}</td>
+              <td><span class="badge bg-warning text-dark">{{request.r_status}}</span></td>
+              <td class="action-btns">
+                  <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Cancel Request</Strong></h1>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" >
+                            <p>Are you sure you want to cancel the Request?</p>
+                        </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                            <form action="/customer/book?cancel=Yes&rid={{request.r_id}}" method="POST">
+                            <button type="submit" class="btn btn-primary">Yes</button>
+                            </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#exampleModal2" >
+                      <i class="bi bi-pen"></i>
+                  </button>
+                  <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Edit Request</Strong></h1>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" >
+                          <h5>{{request.pack.p_name}}</h5>
+                          <div class="form-floating mb-3">
+                            <div class="container">
+                              <form action="/customer/book?rid={{request.r_id}}&edit=yes" method="POST">
+                                <div class="row mb-3">
+                                  <div class="col-md-4">
+                                    <label class="form-label" for="Date">date</label>
+                                    <input type="date" class="form-control" required name="Date">
+                                  </div>
+                                  
+                                  <div class="col-md-4">
+                                    <label class="form-label" for="Time">Time : </label>
+                                    <input type="time" class="form-control" required name="Time">
+                                  </div>
+                                </div>
+                                <button type="submit">Submit</button>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>    
+              </td>
+          </tr>
+        {% endfor %} 
+          
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="card mt-3 shadow-lg">
+  <div class="card-header">
+    Closed Bookings
+  </div>
+  <div class = "card-body">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Service Name</th>
+          <th>Provider Name</th>
+          <th>Payment</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Phone</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for request in req_cls %}
+            <tr>
+              <td>{{request.pack.p_name}}</td>
+              <td>{{request.servprovider.sp_name}}</td>
+              
+              <td>{{request.pack.p_price}}</td>
+              <td>{{request.r_date}}</td>
+              <td>{{request.r_time}}</td>
+              <td>{{request.servprovider.sp_phone}}</td>
+              <td><span class="badge bg-danger text-white">{{request.r_status}}</span></td>
+            </tr>
+        {% endfor %} 
+          
+      </tbody>
+    </table>
   </div>
 </div>
 <script>

@@ -1,7 +1,7 @@
 from flask import Flask,request, render_template, redirect,url_for,flash
 from flask_restful import Api,Resource,fields,marshal_with
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Table, Column, Integer, String, ForeignKey,Nullable
+from sqlalchemy import Table, Column, Integer, String, ForeignKey,Nullable, and_, or_
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user,UserMixin
 import datetime
 import requests
@@ -692,9 +692,11 @@ def Dashboard():
         serv=[]
         for ser in s:
             serv.append(ser.s_name)
-
-        req=db.session.query(Request).filter_by(c_id=current_user.c_id).all()    
-        return render_template("/Customer/CustomerDashboard.html",servname=serv,requests=req,cu=current_user)
+        req_opn=db.session.query(Request).filter(Request.c_id==current_user.c_id, or_(Request.r_status=="Accepted", Request.r_status=="Finished")).all() 
+        req_req=db.session.query(Request).filter_by(c_id=current_user.c_id,r_status="Requested" ).all() 
+        req_cls=db.session.query(Request).filter(Request.c_id==current_user.c_id, or_(Request.r_status=="Closed", Request.r_status=="Cancelled")).all() 
+        print(len(req_opn))
+        return render_template("/Customer/CustomerDashboard.html",servname=serv,req_opn=req_opn,req_req=req_req,req_cls=req_cls,cu=current_user)
     
 @app.route("/customer/book", methods=["GET","POST"])
 @login_required
