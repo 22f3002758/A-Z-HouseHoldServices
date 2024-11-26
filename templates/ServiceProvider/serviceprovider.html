@@ -2,12 +2,7 @@
 {% block content %}
 <div class="d-flex">
   <h1 class="mb-4 me-auto" >Hi, {{cu.sp_name}}!!</h1>
-  {% if cu.sp_status=="Registered" %}
-    <p> Waiting for admin's approval</p>
-  {% elif cu.sp_status=="Flagged" %}
-    <p> You are blocked by admin.</p>
-  {% else %} 
-  
+ {% if cu.sp_status=='Active' %}
   <div> 
     <p><strong>Overall Rating</strong></p>
     {% for i in range(rating) %}
@@ -16,7 +11,8 @@
     {% for i in range(5-rating) %}
       <i class="bi bi-star"></i>
     {% endfor %}
-  </div>                
+  </div> 
+  {% endif %}               
 </div> 
 <div class="container mt-3">
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -32,7 +28,13 @@
     {% endif %}
   {% endwith %}
 </div>          
-            
+{% if cu.sp_status=="Requested" %}
+<h3> Waiting for admin's approval</h3>
+{% elif cu.sp_status=="Flagged" %}
+<h3> You are blocked by admin.</h3>
+{% elif cu.sp_status=="Rejected" %}
+<h3> Sorry, Your request is declined by admin.</h3>
+{% else %}           
 
 <!-- Service History Table -->
 <h4 class="mt-4">Open Services</h4>
@@ -61,20 +63,44 @@
     <td>{{request.cust.c_name}}</td>
         
     <td>{{request.cust.c_phone}}</td>
-    <td>{{request.cust.c_address}}</td>
+    <td>{{request.r_city}}</td>
     <td>{{request.r_date}}</td>
     <td>{{request.r_time}}</td>
     <td><span class="badge bg-success text-white">{{request.r_status}}</span></td>
     
     <td>
       {% if request.r_status=='Accepted' %} 
+      <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal3" >
+        <i class="bi bi-eye"></i>
+      </button>
+      <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Request Details </Strong></h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" >
+              <h5 class = "mb-4">{{request.pack.p_name}}</h5>
+              <div class="row">
+                <div class="col">
+                  <div >
+                    <strong>Address </strong>  :  {{request.r_address}}
+                  </div>
+                </div> 
+              </div>                                            
+            </div>
+          </div>                                      
+        </div>
+      </div>
         <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal4" >
           <a class="text-decoration-none text-white" href="/serviceprovider/dashboard?close=close&rid={{request.r_id}}">Finish</a>
         </button>
+
       {% elif request.r_status=='Finished' %}
         <p>waiting for customer to close</p>
       {% endif %}  
-        
+      
     </td>
   </tr>
   {% endfor %}
@@ -87,66 +113,53 @@
 <h4 class="mt-4">Requested Services</h4>
 <div class="card shadow-lg">
 <div class="card-body">
-<table class="table">
-<thead>
-    <tr>
-        
-        <th>Customer Name</th>
-        
-        <th>Phone no</th>
-        <th>Address</th>
-        <th>Date</th>
-        <th>Time</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-</thead>
-<tbody>
-  {% for request in requested_services %}
-    <tr>
-      
+  <table class="table">
+  <thead>
+      <tr>
+          
+          <th>Customer Name</th>
+          
+          <th>Phone no</th>
+          <th>City</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Actions</th>
+      </tr>
+  </thead>
+  <tbody>
+    {% for request in requested_services %}
+      <tr>
         <td>{{request.cust.c_name}}</td>
-        
         <td>{{request.cust.c_phone}}</td>
-        <td>{{request.cust.c_address}}</td>
+        <td>{{request.r_city}}</td>
         <td>{{request.r_date}}</td>
         <td>{{request.r_time}}</td>
-        
-
         <td><span class="badge bg-info text-dark">{{request.r_status}}</span></td>
         <td class="action-btns">
           <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal3" >
             <i class="bi bi-eye"></i>
-        </button>
-        <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Service Remarks</Strong></h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body" >
-                <h5 class = "mb-4">{{request.pack.p_name}}</h5>
-                <div class="row">
-                  <div class="col">
-                        
-                    <div >
-                      <strong>Address </strong>  :  {{request.cust.c_address}}
-                    </div>
-                    <div>
-                      <strong>Message </strong>  :  {{request.r_message}}
+          </button>
+          <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Request Details </Strong></h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" >
+                  <h5 class = "mb-4">{{request.pack.p_name}}</h5>
+                  <div class="row">
+                    <div class="col">
+                      <div >
+                        <strong>Address </strong>  :  {{request.r_address}}
+                      </div>
                     </div> 
-                  </div> 
-                </div>                                            
-              </div>
-            </div>                                      
-          </div>
-        </div>
+                  </div>                                            
+                </div>
               </div>                                      
             </div>
           </div>
-        </div>
-        
           <button class="btn btn-sm btn-success" >
               <a class="text-decoration-none text-white" href="/serviceprovider/dashboard?rid={{request.r_id}}&accept=accept">Accept</a> 
           </button>
@@ -161,34 +174,22 @@
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" >
-                  <h5>because of</h5>
-                  <div class="form-floating mb-3">
-                      <div class="container text-center">
-                        <form action="/serviceprovider/dashboard?rid={{request.r_id}}&reject=reject" method="POST">
-                        <label for="reject">Reasons: </label><br>
-                        <select name="reject" id="reject" >
-                            <option value="select">Select a service</option>
-                            <option value="busy">Busy Schedule</option>
-                            <option value="Location">Location Inaccesible</option>
-                            <option value="ask req">inappropriate Demand</option>
-                            <option value="Other">Other</option>
-                        </select><br>
-                        <div class="mt-4" >
-                        <button type="submit" class="btn btn-sm btn-success">Submit</button>
-                        </div>
-                        </form>                                                                           
-                      </div>
-                  </div>
-                </div>                                      
+                  <p>Are you Sure you want to reject?</p>
+                </div>
+                <div class="modal-footer">  
+                  <form action="/serviceprovider/dashboard?rid={{request.r_id}}&reject=reject" method="POST">
+                            <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+                  </form>
+                  <button type="button" class="btn btn-primary" data-bs-dismiss="modal">NO</button>
+                </div>
               </div>
-            </div>
-          
-          </td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>
-
+            </div>                                      
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+  </tbody>
+  </table>
 </div>
 </div>
 <h4 class="mt-4">Closed Services</h4>

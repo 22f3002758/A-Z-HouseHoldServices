@@ -271,7 +271,7 @@
                       </div>
                                                         
                       <button class="btn btn-sm btn-success" >
-                          <a class="text-decoration-none text-white" href="/admin/dashboard?spid={{sp.sp_id}}&accept=accept">Accept</a> 
+                          <a class="text-decoration-none text-white" href="/admin/dashboard?spid={{sp.sp_id}}&target=Accept">Accept</a> 
                       </button>
                       <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#spreject-{{sp.sp_id}}" >
                         Reject
@@ -284,22 +284,13 @@
                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body" >
-                              <h5>because of</h5>
-                              <div class="form-floating mb-3">
-                                  <div class="container text-center">
-                                    <form action="/serviceprovider/Dashboard?rid=request.r_id&reject=reject" method="POST">
-                                    <label for="reject">Reasons: </label><br>
-                                    <select name="reject" id="reject" >
-                                        <option value="select">Select a reason</option>
-                                        <option value="busy">Less Experience</option>
-                                        <option value="Other">Other</option>
-                                    </select><br>
-                                    <div class="mt-4" >
-                                    <button type="submit" class="btn btn-sm btn-success">Submit</button>
-                                    </div>
-                                    </form>                                                                           
-                                  </div>
-                              </div>
+                              <p> Are you sure you want to Reject? </p>
+                            </div>
+                            <div class="modal-footer">
+                              <form action="/admin/dashboard?spid={{sp.sp_id}}&target=Reject" method="POST">
+                                <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+                              </form>
+                              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">NO</button>
                             </div>                                      
                           </div>
                         </div>
@@ -388,7 +379,6 @@
                   <th>Customer Name</th>
                   <th>City</th>
                   <th>Phone no</th>
-                  <th>Warnings</th>
                   <th>Action</th>                                                            
                 </tr>
             </thead>  
@@ -398,8 +388,7 @@
                     
                     <td>{{c.c_name}}</td>
                     <td>{{c.c_city}}</td>
-                    <td>{{c.c_phone}}</td>
-                    <td>{{c.c_warn}}</td>                             
+                    <td>{{c.c_phone}}</td>                       
                     <td class="action-btns">
                     
                         <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#cblock-{{c.c_id}}">
@@ -420,38 +409,7 @@
                             </div>
                           </div>
                         </div>
-                        <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#c_warning-{{c.c_id}}" >
-                          <i class="bi bi-exclamation-triangle"></i>
-                        </button>
-                        <div class="modal fade" id="c_warning-{{c.c_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                          <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                              <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Send Warning to {{c.c_name}}!!</Strong></h1>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                              </div>
-                              <div class="modal-body" >
-                                <div class="form-floating mb-3">
-                                  <div class="container">
-                                    <form action="/warning?target=c&action=warning&cid={{c.c_id}}" method="POST">
-                                      
-                                      <div class="row mb-3">
-                                        <div class="col-md-8">
-                                          <label class="form-label" for="msg">Message: </label>
-                                          <textarea type="text" rows="2" class="form-control" name="msg" placeholder="Leave your message if any."></textarea>
-                                        </div>
-                                      </div>
-                                                                
-                                      <input type="submit" value="Send">
-                  
-                                    </form>
-        
-                                  </div>
-                              </div>
-                              </div>
-                              </div>
-                          </div>
-                        </div>
+                        
                       </td>
                 </tr>
                 {% endfor %}
@@ -497,38 +455,7 @@
                         </div>
                       </div>
                     </div>
-                    <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#c_warning-{{c.c_id}}" >
-                      <i class="bi bi-exclamation-triangle"></i>
-                    </button>
-                    <div class="modal fade" id="c_warning-{{c.c_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                      <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Send Warning!!</Strong></h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body" >
-                            <div class="form-floating mb-3">
-                              <div class="container">
-                                <form action="/customer/book?spid=p.servprovider.sp_id&pid=p.p_id" method="POST">
-                                  
-                                  <div class="row mb-3">
-                                    <div class="col-md-8">
-                                      <label class="form-label" for="msg">Message: </label>
-                                      <textarea type="text" rows="2" class="form-control" name="msg" placeholder="Leave your message if any."></textarea>
-                                    </div>
-                                  </div>
-                                                            
-                                  <input type="submit" value="Send">
-              
-                                </form>
-    
-                              </div>
-                          </div>
-                          </div>
-                          </div>
-                      </div>
-                    </div>
+                    
                   </td>
             </tr>
             {% endfor %}

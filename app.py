@@ -121,7 +121,7 @@ class BookApi(Resource):
         elif request.json.get('r_status')=='Finished': 
             rid=request.json.get("rid")
             close_req=db.session.query(Request).filter_by(r_id=rid).first()
-            close_req.r_status="Closed"
+            close_req.r_status="Finished"
             db.session.commit()
             return {"message":"Booking request Finished"}, 200
         
@@ -614,6 +614,7 @@ def register():
 
         
 @app.route("/profile-update", methods=["GET","POST"])
+@login_required
 def update():
     if request.method=="POST" and request.args.get("utype")=="customer":
         cu=current_user
@@ -696,6 +697,7 @@ def Dashboard():
         return render_template("/Customer/CustomerDashboard.html",servname=serv,requests=req,cu=current_user)
     
 @app.route("/customer/book", methods=["GET","POST"])
+@login_required
 def book():
     if request.method=="POST" and "edit" in request.args:
         rid=request.args.get("rid")
@@ -744,6 +746,7 @@ def book():
         
     
 @app.route("/rating",methods=["GET","POST"])
+@login_required
 def rating():
     if request.method=="POST"  :
         rate=request.form.get("rate")
@@ -760,6 +763,7 @@ def rating():
     
 
 @app.route("/customer/search",methods=["GET","POST"])
+@login_required
 def search():
     if request.method=="GET" and "sname" in request.args:
         s=request.args.get("sname")
@@ -787,6 +791,7 @@ def search():
 
 
 @app.route("/customer/stats",methods=["GET","POST"])  
+@login_required
 def cus_stats():
     if request.method=="GET":
         cid=current_user.c_id
@@ -848,6 +853,7 @@ def SPDashboard():
 
 
 @app.route("/serviceprovider/create",methods=["GET","POST"])
+@login_required
 def create_pack():
     if request.method=="GET":
         P=db.session.query(Package).filter_by(sp_id=current_user.sp_id).all()
@@ -878,6 +884,7 @@ def create_pack():
 
     
 @app.route("/serviceprovider/stats",methods=["GET","POST"])  
+@login_required
 def stats():
     if request.method=="GET":
         spid=current_user.sp_id
@@ -893,10 +900,16 @@ def stats():
 @login_required
 def dashboard():
     
-    if request.method=="GET" and 'accept' in request.args :
+    if request.method=="GET" and request.args.get('target')=='Accept' :
         spid=request.args.get("spid")
         sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
         sp.sp_status="Active"
+        db.session.commit()
+        return redirect("/admin/dashboard/")
+    elif request.method=="POST" and request.args.get('target')=='Reject':
+        spid=request.args.get("spid")
+        sp=db.session.query(ServiceProvider).filter_by(sp_id=spid).first()
+        sp.sp_status="Rejected"
         db.session.commit()
         return redirect("/admin/dashboard/")
     elif request.method=="GET":
@@ -928,6 +941,7 @@ def ad_search():
     
 
 @app.route("/flag",methods=["GET","POST"])
+@login_required
 def flag():
     if request.method=="POST" and request.args["target"]=="sp" and request.args["action"]=="flag":
         spid=request.args.get("spid")
@@ -965,7 +979,8 @@ def flag():
             return "something went wrong"
         
 
-@app.route("/admin/stats",methods=["GET","POST"])  
+@app.route("/admin/stats",methods=["GET","POST"]) 
+@login_required 
 def ad_stats():
     if request.method=="GET":
         cu=current_user 
