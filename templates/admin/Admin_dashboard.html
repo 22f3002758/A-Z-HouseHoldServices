@@ -128,7 +128,7 @@
                         <form action="/service?target=ns" method="POST">
                             <div class="mb-3">
                                 <label for="servicename" class="form-label">Service Name</label>
-                                <input type="text" class="form-control" name="servicename" aria-describedby="emailHelp">
+                                <input type="text" class="form-control" name="servicename" required>
                             </div>
                             <div class="mb-3">
                                 <label for="desc" class="form-label" >Description</label>
@@ -136,7 +136,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="baseprice" class="form-label">Base Price</label>
-                                <input type="text" class="form-control" name="baseprice">
+                                <input type="text" class="form-control" name="baseprice" required>
                             </div>
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>

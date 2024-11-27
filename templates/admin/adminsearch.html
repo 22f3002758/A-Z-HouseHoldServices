@@ -37,7 +37,6 @@
                         <th>No.Packages</th>
                         <th>Phone</th>
                         <th>Rating</th>
-                        <th>Warnings</th>
                         <th>Action</th>
                           
                     </tr>
@@ -59,8 +58,6 @@
                               <i class="bi bi-star"></i>
                             {% endfor %}
                           </td>
-                          
-                          <td>{{sp.sp_warn}}</td>
                           <td class="action-btns">
                             
                             <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#spblock-{{sp.sp_id}}">
@@ -84,38 +81,7 @@
                                 </div>
                               </div>
                             </div>
-                            <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#sp-warning-{{sp.sp_id}}" >
-                              <i class="bi bi-exclamation-triangle"></i>
-                            </button>
-                            <div class="modal fade" id="sp-warning-{{sp.sp_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                              <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                  <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Send Warning to {{sp.sp_name}}!!</Strong></h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                  </div>
-                                  <div class="modal-body" >
-                                    <div class="form-floating mb-3">
-                                      <div class="container">
-                                        <form action="/warning?target=sp&action=warning&spid={{sp.sp_id}}" method="POST">
-                                          
-                                          <div class="row mb-3">
-                                            <div class="col-md-8">
-                                              <label class="form-label" for="msg">Message: </label>
-                                              <textarea type="text" rows="2" class="form-control" name="msg" placeholder="Leave your message if any."></textarea>
-                                            </div>
-                                          </div>
-                                                                    
-                                          <input type="submit" value="Send">
-                      
-                                        </form>
-            
-                                      </div>
-                                  </div>
-                                  </div>
-                                  </div>
-                              </div>
-                            </div>
+                            
                           </td>
                       </tr>
                       {% endfor %}
@@ -128,7 +94,7 @@
                       <th>Customer Name</th>
                       <th>City</th>
                       <th>Phone no</th>
-                      <th>Warnings</th>
+                      <th>Address</th>
                       <th>Action</th>                                                            
                     </tr>
                 </thead>  
@@ -139,7 +105,7 @@
                         <td>{{c.c_name}}</td>
                         <td>{{c.c_city}}</td>
                         <td>{{c.c_phone}}</td>
-                        <td>{{c.c_warn}}</td>                             
+                        <td>{{c.c_address}}</td>                             
                         <td class="action-btns">
                         
                             <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#cblock-{{c.c_id}}">
@@ -160,38 +126,7 @@
                                 </div>
                               </div>
                             </div>
-                            <button class="btn btn-sm btn-white border" data-bs-toggle="modal" data-bs-target="#c_warning-{{c.c_id}}" >
-                              <i class="bi bi-exclamation-triangle"></i>
-                            </button>
-                            <div class="modal fade" id="c_warning-{{c.c_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                              <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                  <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exampleModalLabel"><Strong>Send Warning to {{c.c_name}}!!</Strong></h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                  </div>
-                                  <div class="modal-body" >
-                                    <div class="form-floating mb-3">
-                                      <div class="container">
-                                        <form action="/warning?target=c&action=warning&cid={{c.c_id}}" method="POST">
-                                          
-                                          <div class="row mb-3">
-                                            <div class="col-md-8">
-                                              <label class="form-label" for="msg">Message: </label>
-                                              <textarea type="text" rows="2" class="form-control" name="msg" placeholder="Leave your message if any."></textarea>
-                                            </div>
-                                          </div>
-                                                                    
-                                          <input type="submit" value="Send">
-                      
-                                        </form>
-            
-                                      </div>
-                                  </div>
-                                  </div>
-                                  </div>
-                              </div>
-                            </div>
+                            
                           </td>
                     </tr>
                     {% endfor %}

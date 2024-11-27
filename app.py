@@ -11,13 +11,14 @@ matplotlib.use('agg') # to remove interactive backend
 import matplotlib.pyplot as plt
 import fitz
 import math
-
+import os
 
 app=Flask(__name__)# create constructor
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///api_database.sqlite3'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///HomeEase_database.sqlite3'
 app.config['SECRET_KEY']="mysecretkey" # secure sessions and cookie
 db=SQLAlchemy(app) # connect app database with sqlalchemy, it is ORM allows you to interact with the database using Python objects instead of raw SQL queries.
 api=Api(app)
+     
 login_manager=LoginManager(app) #Flask-Login provides user session management, helping you handle login and logout functionality.
 
 app.app_context().push() #This pushes the application context to the stack. 
@@ -320,7 +321,7 @@ class StatisticsApi(Resource):
                     fig.text(0.5 + (i - len(labels) / 2) * 0.15, -0.1, label, 
                             ha='center', va='center', fontsize=10, style='italic', 
                             bbox=dict(facecolor=color, edgecolor='none', boxstyle='round,pad=0.3'))
-            ax.set_title('Service Requests Distribution')
+            ax.set_title('Home Cleaning Distribution')
             ax.set_ylabel('Number of Requests')
             plt.savefig("./static/ad/bar1.png", bbox_inches='tight')
             plt.clf()
@@ -338,7 +339,7 @@ class StatisticsApi(Resource):
             fig, ax = plt.subplots()
             ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=palette[:len(sizes)])
             plt.axis('equal')  
-            plt.title('Services wise distribution')
+            plt.title('Services distribution')
             zero_labels = [label for label, size in d.items() if size == 0]
             zero_colors = palette[len(sizes):len(sizes) + len(zero_labels)]
             if zero_labels:
@@ -694,7 +695,7 @@ def Dashboard():
             serv.append(ser.s_name)
         req_opn=db.session.query(Request).filter(Request.c_id==current_user.c_id, or_(Request.r_status=="Accepted", Request.r_status=="Finished")).all() 
         req_req=db.session.query(Request).filter_by(c_id=current_user.c_id,r_status="Requested" ).all() 
-        req_cls=db.session.query(Request).filter(Request.c_id==current_user.c_id, or_(Request.r_status=="Closed", Request.r_status=="Cancelled")).all() 
+        req_cls=db.session.query(Request).filter(Request.c_id==current_user.c_id, or_(Request.r_status=="Closed", Request.r_status=="Cancelled",Request.r_status=="Rejected")).all() 
         print(len(req_opn))
         return render_template("/Customer/CustomerDashboard.html",servname=serv,req_opn=req_opn,req_req=req_req,req_cls=req_cls,cu=current_user)
     
@@ -736,10 +737,10 @@ def book():
         cid=current_user.c_id
         rdate = request.form.get("Date")
         rtime = request.form.get("Time")
-        raddress = request.form.get("c_add")
+        raddress = request.form.get("c_address")
         rcity = request.form.get("c_city")
         rstatus = "Requested"
-        response=requests.post("http://127.0.0.1:5000/api/book",json={"spid":spid,"pid":pid,"cid":cid,"rdate":rdate,"rtime":rtime,"rcity":rcity,"rstatus":rstatus})
+        response=requests.post("http://127.0.0.1:5000/api/book",json={"spid":spid,"pid":pid,"cid":cid,"rdate":rdate,"rtime":rtime,"rcity":rcity,"rstatus":rstatus,"raddress":raddress})
         if response.status_code==200:
             flash(response.json()["message"])
             return redirect("/customer/Dashboard")
@@ -838,7 +839,7 @@ def SPDashboard():
         r=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_date=cd,r_status="Accepted").all()
         Opser = db.session.query(Request).filter_by(sp_id=current_user.sp_id).filter(Request.r_status.in_(["Accepted", "Finished"])).all()
         reqser=db.session.query(Request).filter_by(sp_id=current_user.sp_id,r_status="Requested").all()
-        closeser=db.session.query(Request).filter(Request.sp_id==current_user.sp_id,Request.r_status.in_(["Closed", "Cancelled"])).all()
+        closeser=db.session.query(Request).filter(Request.sp_id==current_user.sp_id,Request.r_status.in_(["Closed", "Cancelled","Rejected"])).all()
         mypack=current_user.mypackages
         if mypack:
             rate=0

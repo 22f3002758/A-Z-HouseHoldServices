@@ -1,7 +1,10 @@
 {% extends "/ServiceProvider/serviceprovider_base.html" %}
 {% block content %}
 <div class="d-flex">
-  <h1 class="mb-4 me-auto" >Hi, {{cu.sp_name}}!!</h1>
+  <div class="me-auto">
+    <h1 class="mb-4 " >Hi, {{cu.sp_name}}!!</h1>
+    <p class="mb-4 " ><b>Category:</b> {{cu.sp_servicename}}</p>
+  </div>
  {% if cu.sp_status=='Active' %}
   <div> 
     <p><strong>Overall Rating</strong></p>
@@ -49,7 +52,7 @@
     <th>Customer Name</th>
         
     <th>Phone no</th>
-    <th>Address</th>
+    <th>City</th>
     <th>Date</th>
     <th>Time</th>
     <th>Status</th>
