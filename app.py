@@ -681,7 +681,8 @@ def login():
             login_user(ad)
             return redirect("/admin/dashboard")
         else:
-            return render_template("notexist.html")
+            flash("Wrong Credentials")
+            return redirect("/login")
 
 
 @app.route("/customer/Dashboard",methods=["GET","POST"])
@@ -780,15 +781,21 @@ def search():
         return render_template("/Customer/custsearch.html",Services=Servis,cu=current_user)
     
     elif request.method=="POST":    
-        ser=request.form.get("service")
+        s=request.form.get("service")
         citi=request.form.get("city")
         Servis=db.session.query(Services).all()
-        Servisprovider=db.session.query(ServiceProvider).filter_by(sp_servicename=ser,sp_city=citi).all()
+        
         pack=[]
-        for sp in Servisprovider:
-            for p in sp.mypackages:
-                pack.append(p)   
-                     
+        if s != 'Any':
+            ser=db.session.query(Services).filter_by(s_name=s).first()
+            
+            allpack = db.session.query(Package).filter_by(s_id=ser.s_id).order_by(Package.p_rating.desc()).all() 
+            for p in allpack:
+                if citi:
+                    if p.servprovider.sp_city==citi:
+                        pack.append(p)
+                else:
+                    pack.append(p)     
         return render_template("/Customer/custsearch.html",package=pack,Services=Servis,cu=current_user,show='post')
         
 
